@@ -1,0 +1,50 @@
+<div class="container">
+
+  <div class="jumbotron">
+    <h4 ng-if="user.isSignedIn">Hello {{user.name}} :)</h4>
+    <h1>Comment on l'appelle aujourd'hui ?</h1>
+    <form 
+      ng-if="user.isSignedIn"
+      ng-controller="NameSubmissionFormController as submission" 
+      name="submission.form" 
+      ng-submit="submission.submit(main.name, main.rating)">
+      <div class="form-group" ng-class="{'has-error': submission.form.$invalid && submission.form.$dirty}">
+        <input 
+          type="text" 
+          class="form-control input-lg" 
+          placeholder="un petit nom ici"
+          ng-model="submission.submission"
+          required
+          hg-parse-as-name-and-rating
+          hg-name="main.name"
+          hg-name-unique-among="main.names"
+          hg-rating="main.rating">
+      </div>
+      <input type="submit" class="btn btn-primary btn-lg" value="C'est parti !" ng-disabled="submission.form.$invalid">
+      <span class="label label-danger" ng-show="submission.form.$dirty && submission.form.$error.required">Rien du tout ? :(</span>
+      <span class="label label-danger" ng-show="submission.form.$dirty && submission.form.$error.pattern">Que des lettres stp :)</span>
+      <span class="label label-danger" ng-show="submission.form.$dirty && submission.form.$error.unique">Il y est déjà celui là !</span>
+    </form>
+    <span google-plus-sign-in on-sign-in="user.onSignIn()" ng-hide="user.isSignedIn"/>
+  </div>
+
+  <table class="table" id="table" ng-if="user.isSignedIn">
+    <thead>
+      <td>Prénom</td>
+      <td>Proposé par</td>
+      <td>Note</td>
+    </thead>
+    <tbody>
+      <tr ng-repeat="name in main.names | orderByPriority | filter:{name: main.name}">
+        <td>{{name.name}}</td>
+        <td>{{name.submitter}}, <span am-time-ago="name.time"></span></td>
+        <td><rating ng-model="name.rating" state-off="'fa fa-star-o'" state-on="'fa fa-star'"></rating></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="col-xs-4 col-xs-offset-4" ng-show="main.loading">
+    <i class="fa fa-spinner fa-spin fa-4x"></i>
+  </div>
+
+</div>

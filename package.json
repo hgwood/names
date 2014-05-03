@@ -1,0 +1,10 @@
+{
+  "name": "names",
+  "version": "1.0.0",
+  "devDependencies": {},
+  "dependencies": {
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt": "^0.4.4",
+    "grunt-contrib-connect": "^0.7.1"
+  }
+}
