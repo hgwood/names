@@ -3,7 +3,7 @@
 
   <div class="jumbotron">
     <h4 ng-if="user.isSignedIn">Hello {{user.name}} :)</h4>
-    <h1>Comment on l'appelle aujourd'hui ?</h1>
+    <h2>Comment on l'appelle aujourd'hui ?</h2>
     <form 
       ng-if="user.isSignedIn"
       ng-controller="NameSubmissionFormController as submission" 
