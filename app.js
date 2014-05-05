@@ -111,7 +111,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase'])
       rating: '=hgRating',
     },
     link: function (scope, element, attrs, ngModel) {
-      var regex = new RegExp(/^([A-Za-zÇÈÉçèéê]+)(?: )?([0-5])?$/);
+      var regex = new RegExp(/^([A-Za-zÇÈÉçèéê\-]+)(?: )?([0-5])?$/);
       scope.$watch('model', function (newValue) {
         if (angular.isUndefined(newValue)) newValue = '';
         var match = regex.exec(newValue);
