@@ -1,4 +1,4 @@
-angular.module('app', ['ngRoute', 'googlePlus', 'ui.bootstrap', 'angularMoment', 'firebase'])
+angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase'])
 
 .config(function ($routeProvider) {
   $routeProvider
@@ -17,32 +17,68 @@ angular.module('app', ['ngRoute', 'googlePlus', 'ui.bootstrap', 'angularMoment',
   $rootScope.user = user;
 })
 
-.service('user', function (googlePlus) {
-  var that = this;
+.value('submissionFirebaseReference', new Firebase('boiling-fire-3739.firebaseIO.com/apps/names/dev/submissions'))
 
-  that.isSignedIn = false;
+.factory('authentication', function ($firebaseSimpleLogin, submissionFirebaseReference, $rootScope, $q) {
+  var firebaseSimpleLogin = $firebaseSimpleLogin(submissionFirebaseReference);
+  return {
+    login: function () {
+      firebaseSimpleLogin.$login('google'); 
+    },
+    logout: firebaseSimpleLogin.$logout,
+    getUser: firebaseSimpleLogin.$getCurrentUser,
 
-  that.onSignIn = function () {
-    googlePlus.load().then(function () {
-      return googlePlus.getUsername();
-    }).then(function (username) {
-      that.name = username;
-      that.isSignedIn = true;
-    });
+    onLogin: function (callback) {
+      $rootScope.$on('$firebaseSimpleLogin:login', function(event, user) {
+        callback(user);
+      });
+    },
+
+    onError: function (callback) {
+      $rootScope.$on('$firebaseSimpleLogin:error', function(event, error) {
+        callback(error);
+      });
+    },
+
+    onLogout: function (callback) {
+      $rootScope.$on('$firebaseSimpleLogin:logout', function(event) {
+        callback();
+      });
+    },
   };
-
-  // DEV MODE
-  that.name = 'Hugo';
-  that.isSignedIn = true;
 })
 
-.controller('NameSubmissionFormController', function ($location, names, user) {
+.factory('submissionRepository', function ($firebase, submissionFirebaseReference) {
+  return $firebase(submissionFirebaseReference);
+})
+
+.service('user', function (authentication) {
+  var that = this;
+  that.isSignedIn = false;
+  that.errorMessage = '';
+  authentication.onLogin(function (user) {
+    that.errorMessage = '';
+    that.isSignedIn = true;
+    that.name = user.thirdPartyUserData.given_name;
+  });
+  authentication.onLogout(function () {
+    that.isSignedIn = false;
+  });
+  authentication.onError(function (error) {
+    that.isSignedIn = false;
+    that.errorMessage = error.message;
+  });
+  that.login = authentication.login;
+  that.logout = authentication.logout;
+})
+
+.controller('NameSubmissionFormController', function (submissionRepository, user) {
   var that = this;
 
   that.submission = '';
 
   that.submit = function (name, rating) {
-    names.add({
+    submissionRepository.$add({
       name: name,
       submitter: user.name,
       time: new Date(),
@@ -53,11 +89,14 @@ angular.module('app', ['ngRoute', 'googlePlus', 'ui.bootstrap', 'angularMoment',
   };
 })
 
-.controller('MainController', function (names, user) {
+.controller('MainController', function (submissionRepository, authentication) {
   var that = this;
-  that.loading = true;
-  that.names = names.getNames(function () {
-    that.loading = false;
+  authentication.onLogin(function () {
+    that.loading = true;
+    submissionRepository.$on('loaded', function () {
+      that.loading = false;
+    });
+    that.names = submissionRepository;
   });
 })
 
@@ -91,29 +130,6 @@ angular.module('app', ['ngRoute', 'googlePlus', 'ui.bootstrap', 'angularMoment',
       });
     },
   };
-})
-
-.service('names', function ($firebase) {
-  var nameFire = $firebase(new Firebase('boiling-fire-3739.firebaseIO.com/dev/names'));
-
-  var that = this;
-
-  that.names = nameFire;
-  that.getNames = function (callback) {
-    nameFire.$on('loaded', callback);
-    return that.names;
-  };
-  /*that.names = [
-    { name: 'Albert', submitter: 'Amandine', time: new Date('2014/05/01'), rating: 4 },
-    { name: 'Bernadette', submitter: 'Hugo', time: new Date('2014/04/23'), rating: 3 },
-    { name: 'Cruela', submitter: 'Hugo', time: new Date('2014/05/03'), rating: 5 },
-    { name: 'Daniela', submitter: 'Amandine', time: new Date('2014/05/03 19:00'), rating: 2 },
-  ];*/
-
-  /*that.add = function (name) {
-    that.names.push(name);
-  };*/
-  that.add = nameFire.$add;
 })
 
 .service('uniqueness', function() {
