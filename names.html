@@ -6,7 +6,7 @@
       <span>Hello {{user.name}} :)</span>
       <button class="btn btn-danger" ng-click="user.logout()">J'ai fini !</button>
     </div>
-    <h2>Comment on l'appelle aujourd'hui ?</h2>
+    <h1>Comment on l'appelle aujourd'hui ?</h1>
     <div ng-hide="user.isSignedIn">
       <button class="btn btn-primary btn-lg" ng-click="user.login()">Qui c'est ?</button>
       <div class="label label-danger" ng-show="!!user.errorMessage">Login impossible : {{user.errorMessage}}</div>
