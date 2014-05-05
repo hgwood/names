@@ -126,6 +126,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase'])
           scope.name = _.str.capitalize(newValue);;
           scope.rating = 0;
           ngModel.$setValidity('pattern', !newValue);
+          ngModel.$setValidity('unique', true);
         }
       });
     },
