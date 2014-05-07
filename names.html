@@ -4,7 +4,6 @@
   <div class="jumbotron">
     <div ng-show="user.isSignedIn">
       <span>Hello {{user.name}} :)</span>
-      <button class="btn btn-danger" ng-click="user.logout()">J'ai fini !</button>
     </div>
     <h1>Comment on l'appelle aujourd'hui ?</h1>
     <div ng-hide="user.isSignedIn">
@@ -28,10 +27,13 @@
           hg-name-unique-among="main.names"
           hg-rating="main.rating">
       </div>
-      <input type="submit" class="btn btn-primary btn-lg" value="C'est parti !" ng-disabled="submission.form.$invalid">
-      <span class="label label-danger" ng-show="submission.form.$dirty && submission.form.$error.required">Rien du tout ? :(</span>
-      <span class="label label-danger" ng-show="submission.form.$dirty && submission.form.$error.pattern">Que des lettres stp :)</span>
-      <span class="label label-danger" ng-show="submission.form.$dirty && submission.form.$error.unique">Il y est déjà celui là !</span>
+      <div>
+        <span class="label label-danger" ng-show="submission.form.$dirty && submission.form.$error.required">Rien du tout ? :(</span>
+        <span class="label label-danger" ng-show="submission.form.$dirty && submission.form.$error.pattern">Que des lettres stp :)</span>
+        <span class="label label-danger" ng-show="submission.form.$dirty && submission.form.$error.unique">Il y est déjà celui là !</span>
+      </div>
+      <button class="btn btn-primary btn-lg" ng-disabled="submission.form.$invalid">C'est parti !</button>
+      <button class="btn btn-danger btn-lg" ng-click="user.logout()">J'ai fini !</button>
     </form>
   </div>
 
