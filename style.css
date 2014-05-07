@@ -6,6 +6,15 @@ body {
   font-size: 150%;
 }
 
+input.form-control {
+  font-size: 100%;
+  height: 20%;
+}
+
+button.btn {
+  font-size: 100%;
+}
+
 .fa-star, .fa-star-o {
   color: #FFDF00;
 }
