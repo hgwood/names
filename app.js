@@ -118,6 +118,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase'])
         if (match) {
           scope.name = _.str.capitalize(match[1]);
           scope.rating = match[2] ? parseInt(match[2], 10) : 0;
+          ngModel.$setValidity('ratingMissing', !!match[2]);
           ngModel.$setValidity('pattern', true);
           if (scope.names) {
             ngModel.$setValidity('unique', uniqueness.check(scope.name, _.pluck(scope.names, 'name')));

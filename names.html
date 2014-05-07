@@ -26,11 +26,11 @@
           hg-name="main.name"
           hg-name-unique-among="main.names"
           hg-rating="main.rating">
-      </div>
-      <div>
-        <span class="label label-danger" ng-show="submission.form.$dirty && submission.form.$error.required">Rien du tout ? :(</span>
-        <span class="label label-danger" ng-show="submission.form.$dirty && submission.form.$error.pattern">Que des lettres stp :)</span>
-        <span class="label label-danger" ng-show="submission.form.$dirty && submission.form.$error.unique">Il y est déjà celui là !</span>
+        <div>
+          <span class="label label-danger" ng-show="submission.form.$dirty && submission.form.$error.pattern">Que des lettres stp :)</span>
+          <span class="label label-danger" ng-show="submission.form.$dirty && submission.form.$error.ratingMissing">Oublie pas le note à la fin :)</span>
+          <span class="label label-danger" ng-show="submission.form.$dirty && submission.form.$error.unique">Il y est déjà celui là !</span>
+        </div>
       </div>
       <button class="btn btn-primary btn-lg" ng-disabled="submission.form.$invalid">C'est parti !</button>
       <button class="btn btn-danger btn-lg" ng-click="user.logout()">J'ai fini !</button>
