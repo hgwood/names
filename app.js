@@ -48,6 +48,22 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase'])
   };
 })
 
+.service('ratingService', function (user) {
+  var that = this;
+  
+  that.hasBeenRatedBy = function (submission, username) {
+    return submission.ratings[username] > 0;
+  };
+
+  that.averageRating = function (submission) {
+    if (!that.hasBeenRatedBy(submission, user.name)) return 0;
+    var ratings = _.values(submission.ratings);
+    var sum = _.reduce(ratings, function (sum, rating) { return sum += rating; });
+    var avg = sum / ratings.length;
+    return avg;
+  };
+})
+
 .factory('submissionRepository', function ($firebase, submissionFirebaseReference) {
   return $firebase(submissionFirebaseReference);
 })
@@ -78,25 +94,43 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase'])
   that.submission = '';
 
   that.submit = function (name, rating) {
-    submissionRepository.$add({
+    var ratings = {};
+    ratings[user.name] = rating;
+    var submission = {
       name: name,
       submitter: user.name,
       time: new Date(),
-      rating: rating,
-    });
+      ratings: ratings,
+    };
+    submissionRepository.$add(submission);
     that.submission = '';
     that.form.$setPristine();
   };
 })
 
-.controller('MainController', function (submissionRepository, authentication) {
+.controller('MainController', function ($scope, submissionRepository, authentication) {
   var that = this;
   authentication.onLogin(function () {
     that.loading = true;
     submissionRepository.$on('loaded', function () {
       that.loading = false;
     });
-    that.names = submissionRepository;
+    submissionRepository.$bind($scope, "main.names");
+  });
+})
+
+.controller('SubmissionItemController', function ($scope, user, ratingService) {
+  var that = this;
+
+  that.hasBeenRatedBy = ratingService.hasBeenRatedBy;
+  that.rating = $scope.name.ratings[user.name];
+
+  var unwatch = $scope.$watch('submission.rating', function (rating) {
+    if (!$scope.name.ratings) return;
+    if (!that.rating) return;
+    $scope.name.ratings[user.name] = rating;
+    that.rating = ratingService.averageRating($scope.name);
+    unwatch();
   });
 })
 

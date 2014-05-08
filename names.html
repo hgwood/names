@@ -44,10 +44,12 @@
       <td>Note</td>
     </thead>
     <tbody>
-      <tr ng-repeat="name in main.names | orderByPriority | filter:{name: main.name}">
+      <tr ng-repeat="name in main.names | orderByPriority | filter:{name: main.name}" ng-controller="SubmissionItemController as submission">
         <td>{{name.name}}</td>
         <td>{{name.submitter}}, <span am-time-ago="name.time"></span></td>
-        <td><rating ng-model="name.rating" state-off="'fa fa-star-o'" state-on="'fa fa-star'"></rating></td>
+        <td>
+          <rating readonly="submission.hasBeenRatedBy(name, user.name)" ng-model="submission.rating" state-off="'fa fa-star-o'" state-on="'fa fa-star'"></rating>
+        </td>
       </tr>
     </tbody>
   </table>
