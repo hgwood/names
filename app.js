@@ -17,7 +17,15 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase'])
   $rootScope.user = user;
 })
 
-.value('submissionFirebaseReference', new Firebase('boiling-fire-3739.firebaseIO.com/apps/names/dev/submissions'))
+.factory('submissionFirebaseReference', function ($location, $interpolate) {
+  var url = 'boiling-fire-3739.firebaseIO.com/apps/names/{{env}}/submissions';
+  console.log($interpolate(url)({env: 'dev'}));
+  if ($location.host().match(/localhost|127\.0\.0\.1|192\.168\./)) {
+    return new Firebase($interpolate(url)({env: 'dev'}));
+  } else {
+    return new Firebase($interpolate(url)({env: 'prod'}));
+  }
+}) 
 
 .factory('authentication', function ($firebaseSimpleLogin, submissionFirebaseReference, $rootScope, $q) {
   var firebaseSimpleLogin = $firebaseSimpleLogin(submissionFirebaseReference);
