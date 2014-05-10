@@ -17,6 +17,20 @@
   </div>
 </div>
 
+<div class="row" ng-show="!!error">
+  <div class="col-xs-10 col-xs-offset-1">
+    <div class="panel panel-danger">
+      <div class="panel-heading">
+        Erreur de connexion
+      </div>
+      <div class="panel-body">
+        <p ng-show="!!error.message">{{error.message}}</p>
+        <p>Code : {{error.code}}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="loginLoading" class="row" ng-show="loggingIn">
   <div class="col-xs-12">
     <i class="fa fa-refresh fa-spin fa-4x"></i>

@@ -2,6 +2,10 @@ body {
   font-size: 300%;
 }
 
+.row {
+  padding: 10px 0;
+}
+
 #loginForm {
   text-align: center;
 }

@@ -34,7 +34,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
       $location.path('/names');
     }).catch(function (error) {
       $scope.loggingIn = false;
-      $scope.loginError = error;
+      $scope.error = error;
     });
   };
 })
