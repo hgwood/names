@@ -71,8 +71,8 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase'])
   };
 })
 
-.factory('submissionRepository', function ($firebase, submissionFirebaseReference) {
-  return $firebase(submissionFirebaseReference);
+.factory('submissionRepository', function ($firebase, submissionFirebaseReference, authentication) {
+  return submissionFirebaseReference;
 })
 
 .service('user', function (authentication) {
@@ -95,7 +95,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase'])
   that.logout = authentication.logout;
 })
 
-.controller('NameSubmissionFormController', function (submissionRepository, user) {
+.controller('NameSubmissionFormController', function (submissionRepository, user, $firebase) {
   var that = this;
 
   that.submission = '';
@@ -109,15 +109,16 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase'])
       time: new Date(),
       ratings: ratings,
     };
-    submissionRepository.$add(submission);
+    $firebase(submissionRepository).$add(submission);
     that.submission = '';
     that.form.$setPristine();
   };
 })
 
-.controller('MainController', function ($scope, submissionRepository, authentication) {
+.controller('MainController', function ($scope, submissionRepository, authentication, $firebase) {
   var that = this;
   authentication.onLogin(function () {
+    submissionRepository = $firebase(submissionRepository);
     that.loading = true;
     submissionRepository.$on('loaded', function () {
       that.loading = false;
