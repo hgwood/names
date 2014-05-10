@@ -1,4 +1,4 @@
-angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', 'hgDefer'])
+angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase'])
 
 .config(function ($routeProvider) {
   $routeProvider
@@ -21,25 +21,29 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
   $rootScope.user = user;
 })
 
-.controller('loginController', function ($scope, $location, authenticationp) {
+.controller('loginController', function ($scope, $rootScope, $location, authenticationp) {
   $scope.loggingIn = true;
-  authenticationp.autoLogin().then(function () {
-    $location.path('/names');
-  }).catch(function () {
-    $scope.loggingIn = false;
-  });
-  $scope.login = function (provider) {
-    $scope.loggingIn = true;
-    authenticationp.manualLogin(provider).then(function () {
+
+  authenticationp.login().then(
+    function (user) {
+      $rootScope.user = user;
       $location.path('/names');
-    }).catch(function (error) {
+    },
+    function (error) {
       $scope.loggingIn = false;
       $scope.error = error;
-    });
+    },
+    function () { // login didn't not happen automatically, user must click the connect button
+      $scope.loggingIn = false;
+    }
+  );
+
+  $scope.login = function (provider) {
+    $scope.loggingIn = true;
+    authenticationp.manualLogin(provider);
   };
+
 })
-
-
 
 .factory('submissionFirebaseReference', function ($location, $interpolate) {
   var url = 'boiling-fire-3739.firebaseIO.com/apps/names/{{env}}/submissions';
@@ -50,21 +54,30 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
   }
 })
 
-.factory('authenticationp', function ($firebaseSimpleLogin, submissionFirebaseReference, $rootScope, defer) {
+.factory('authenticationp', function ($firebaseSimpleLogin, submissionFirebaseReference, $rootScope, $q) {
   var firebaseSimpleLogin = $firebaseSimpleLogin(submissionFirebaseReference);
+  var loginResult = $q.defer();
   return {
-    autoLogin: function () {
-      return defer(function (promise) {
-        $rootScope.$on('$firebaseSimpleLogin:login', function(event, user) {
-          promise.resolve(user);
-        });
-        $rootScope.$on('$firebaseSimpleLogin:logout', function(event) {
-          promise.reject();
-        });
+    login: function () {
+      var unsubscribeFromLoginEvent = $rootScope.$on('$firebaseSimpleLogin:login', function(event, user) {
+        unsubscribeFromLoginEvent();
+        unsubscribeFromLogoutEvent();
+        loginResult.resolve(user);
       });
+      var unsubscribeFromLogoutEvent = $rootScope.$on('$firebaseSimpleLogin:logout', function(event) {
+        unsubscribeFromLoginEvent();
+        unsubscribeFromLogoutEvent();
+        loginResult.notify('automatic login failed');
+      });
+      return loginResult.promise;
     },
     manualLogin: function (provider) {
-      return firebaseSimpleLogin.$login(provider);
+      firebaseSimpleLogin.$login(provider).then(function (user) {
+        loginResult.resolve(user);
+      }).catch(function (error) {
+        loginResult.reject(error);
+      });
+      return loginResult.promise;
     },
   };
 })
