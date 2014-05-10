@@ -7,22 +7,22 @@
     <form 
       ng-controller="NameSubmissionFormController as submission" 
       name="submission.form" 
-      ng-submit="submission.submit(main.name, main.rating)">
+      ng-submit="submission.submit(submission.name)">
       <div class="form-group" ng-class="{'has-error': submission.form.$invalid && submission.form.$dirty}">
         <input 
           type="text" 
           class="form-control input-lg" 
           placeholder="un petit nom ici"
-          ng-model="submission.submission"
+          ng-model="submission.name"
           required
-          hg-parse-as-name-and-rating
-          hg-name="main.name"
-          hg-name-unique-among="main.names"
-          hg-rating="main.rating">
+          hg-unique-among="main.names"
+          hg-unique-field="name">
         <div>
-          <span class="label label-danger" ng-show="submission.form.$dirty && submission.form.$error.pattern">Que des lettres stp :)</span>
-          <span class="label label-danger" ng-show="submission.form.$dirty && submission.form.$error.ratingMissing">Oublie pas le note à la fin :)</span>
-          <span class="label label-danger" ng-show="submission.form.$dirty && submission.form.$error.unique">Il y est déjà celui là !</span>
+          <span 
+            class="label label-danger" 
+            ng-show="submission.form.$dirty && submission.form.$error.unique">
+            Il y est déjà celui là !
+          </span>
         </div>
       </div>
       <button class="btn btn-primary btn-lg" ng-disabled="submission.form.$invalid">C'est parti !</button>
