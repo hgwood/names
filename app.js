@@ -1,4 +1,4 @@
-angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase'])
+angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', 'hgDefer'])
 
 .config(function ($routeProvider) {
   $routeProvider
@@ -39,13 +39,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase'])
   };
 })
 
-.factory('defer', function ($q) {
-  return function (f) {
-    var q = $q.defer();
-    f(q);
-    return q.promise;
-  };
-})
+
 
 .factory('submissionFirebaseReference', function ($location, $interpolate) {
   var url = 'boiling-fire-3739.firebaseIO.com/apps/names/{{env}}/submissions';
