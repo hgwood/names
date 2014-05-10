@@ -2,7 +2,19 @@ body {
   font-size: 300%;
 }
 
+#loginForm {
+  text-align: center;
+}
+
+#loginLoading {
+  text-align: center;
+}
+
 .jumbotron h1 {
+  font-size: 150%;
+}
+
+h1 {
   font-size: 150%;
 }
 

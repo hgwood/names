@@ -2,6 +2,10 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase'])
 
 .config(function ($routeProvider) {
   $routeProvider
+    .when('/login', {
+      templateUrl: 'login.html',
+      controller: 'loginController',
+    })
     .when('/names', {
       templateUrl: 'names.html',
       controller: 'MainController',
@@ -17,6 +21,32 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase'])
   $rootScope.user = user;
 })
 
+.controller('loginController', function ($scope, $location, authenticationp) {
+  $scope.loggingIn = true;
+  authenticationp.autoLogin().then(function () {
+    $location.path('/names');
+  }).catch(function () {
+    $scope.loggingIn = false;
+  });
+  $scope.login = function (provider) {
+    $scope.loggingIn = true;
+    authenticationp.manualLogin(provider).then(function () {
+      $location.path('/names');
+    }).catch(function (error) {
+      $scope.loggingIn = false;
+      $scope.loginError = error;
+    });
+  };
+})
+
+.factory('defer', function ($q) {
+  return function (f) {
+    var q = $q.defer();
+    f(q);
+    return q.promise;
+  };
+})
+
 .factory('submissionFirebaseReference', function ($location, $interpolate) {
   var url = 'boiling-fire-3739.firebaseIO.com/apps/names/{{env}}/submissions';
   if ($location.host().match(/localhost|127\.0\.0\.1|192\.168\./)) {
@@ -24,7 +54,26 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase'])
   } else {
     return new Firebase($interpolate(url)({env: 'prod'}));
   }
-}) 
+})
+
+.factory('authenticationp', function ($firebaseSimpleLogin, submissionFirebaseReference, $rootScope, defer) {
+  var firebaseSimpleLogin = $firebaseSimpleLogin(submissionFirebaseReference);
+  return {
+    autoLogin: function () {
+      return defer(function (promise) {
+        $rootScope.$on('$firebaseSimpleLogin:login', function(event, user) {
+          promise.resolve(user);
+        });
+        $rootScope.$on('$firebaseSimpleLogin:logout', function(event) {
+          promise.reject();
+        });
+      });
+    },
+    manualLogin: function (provider) {
+      return firebaseSimpleLogin.$login(provider);
+    },
+  };
+})
 
 .factory('authentication', function ($firebaseSimpleLogin, submissionFirebaseReference, $rootScope, $q) {
   var firebaseSimpleLogin = $firebaseSimpleLogin(submissionFirebaseReference);
