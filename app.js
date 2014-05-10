@@ -22,16 +22,21 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
 })
 
 .controller('loginController', function ($scope, $location, authenticationp) {
-  $scope.loggingIn = true;
-  authenticationp.autoLogin().then(function () {
+  var onLoginSucess = function (user) {
     $location.path('/names');
+  };
+
+  $scope.loggingIn = true;
+  authenticationp.autoLogin().then(function (user) {
+    onLoginSucess(user);
   }).catch(function () {
     $scope.loggingIn = false;
   });
+  
   $scope.login = function (provider) {
     $scope.loggingIn = true;
-    authenticationp.manualLogin(provider).then(function () {
-      $location.path('/names');
+    authenticationp.manualLogin(provider).then(function (user) {
+      onLoginSucess();
     }).catch(function (error) {
       $scope.loggingIn = false;
       $scope.error = error;
