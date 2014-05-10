@@ -2,16 +2,9 @@
 <div class="col-sm-12 col-md-8 col-md-offset-2">
 
   <div class="jumbotron">
-    <div ng-show="user.isSignedIn">
-      <span>Hello {{user.name}} :)</span>
-    </div>
+    <span>Hello {{user.name}} :)</span>
     <h1>Comment on l'appelle aujourd'hui ?</h1>
-    <div ng-hide="user.isSignedIn">
-      <button class="btn btn-primary btn-lg" ng-click="user.login()">Qui c'est ?</button>
-      <div class="label label-danger" ng-show="!!user.errorMessage">Login impossible : {{user.errorMessage}}</div>
-    </div>
     <form 
-      ng-show="user.isSignedIn"
       ng-controller="NameSubmissionFormController as submission" 
       name="submission.form" 
       ng-submit="submission.submit(main.name, main.rating)">
@@ -33,11 +26,10 @@
         </div>
       </div>
       <button class="btn btn-primary btn-lg" ng-disabled="submission.form.$invalid">C'est parti !</button>
-      <button class="btn btn-danger btn-lg" ng-click="user.logout()">J'ai fini !</button>
     </form>
   </div>
 
-  <table class="table" id="table" ng-show="user.isSignedIn">
+  <table class="table" id="table">
     <thead>
       <td>Prénom</td>
       <td>Proposé par</td>

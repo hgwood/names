@@ -21,8 +21,9 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
   $rootScope.user = user;
 })
 
-.controller('loginController', function ($scope, $location, authenticationp) {
-  var onLoginSucess = function (user) {
+.controller('loginController', function ($scope, $location, authenticationp, user) {
+  var onLoginSucess = function (thirdPartyUser) {
+    user.set(thirdPartyUser);
     $location.path('/names');
   };
 
@@ -32,11 +33,11 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
   }).catch(function () {
     $scope.loggingIn = false;
   });
-  
+
   $scope.login = function (provider) {
     $scope.loggingIn = true;
     authenticationp.manualLogin(provider).then(function (user) {
-      onLoginSucess();
+      onLoginSucess(user);
     }).catch(function (error) {
       $scope.loggingIn = false;
       $scope.error = error;
@@ -128,23 +129,13 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
 })
 
 .service('user', function (authentication) {
-  var that = this;
-  that.isSignedIn = false;
-  that.errorMessage = '';
-  authentication.onLogin(function (user) {
-    that.errorMessage = '';
-    that.isSignedIn = true;
-    that.name = user.thirdPartyUserData.given_name;
-  });
-  authentication.onLogout(function () {
-    that.isSignedIn = false;
-  });
-  authentication.onError(function (error) {
-    that.isSignedIn = false;
-    that.errorMessage = error.message;
-  });
-  that.login = authentication.login;
-  that.logout = authentication.logout;
+  var user;
+  return {
+    set: function (thirdPartyUser) {
+      user = thirdPartyUser;
+      this.name = user.thirdPartyUserData.given_name; 
+    },
+  }
 })
 
 .controller('NameSubmissionFormController', function (submissionRepository, user, $firebase) {
