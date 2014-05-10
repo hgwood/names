@@ -55,10 +55,14 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
   return {
     autoLogin: function () {
       return defer(function (promise) {
-        $rootScope.$on('$firebaseSimpleLogin:login', function(event, user) {
+        var unsubscribeFromLoginEvent = $rootScope.$on('$firebaseSimpleLogin:login', function(event, user) {
+          unsubscribeFromLoginEvent();
+          unsubscribeFromLogoutEvent();
           promise.resolve(user);
         });
-        $rootScope.$on('$firebaseSimpleLogin:logout', function(event) {
+        var unsubscribeFromLogoutEvent = $rootScope.$on('$firebaseSimpleLogin:logout', function(event) {
+          unsubscribeFromLoginEvent();
+          unsubscribeFromLogoutEvent();
           promise.reject();
         });
       });
