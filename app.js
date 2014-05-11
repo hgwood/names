@@ -11,7 +11,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
       controller: 'MainController',
       controllerAs: 'main',
       resolve: {
-        submissions: function ($firebase, submissionFirebaseReference, defer, user, $location) {
+        submissions: function ($firebase, submissionFirebaseReference, defer, user, $location, upgrade) {
           return defer(function (promise) {
             if (!user.loggedIn) {
               promise.reject();
@@ -19,6 +19,8 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
             } else {
               var submissions = $firebase(submissionFirebaseReference);
               submissions.$on('loaded', function () {
+                upgrade(submissions);
+                submissions.$save();
                 promise.resolve(submissions);
               });
             }
@@ -34,6 +36,17 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
 .run(function (amMoment, $rootScope, user) {
   amMoment.changeLanguage('fr');
   $rootScope.user = user;
+})
+
+.factory('upgrade', function () {
+  return function (data) {
+    _.each(data.$getIndex(), function (key) {
+      var item = data[key];
+      if (item.version === undefined) {
+        item.version = 1;
+      }
+    });
+  };
 })
 
 .controller('loginController', function ($scope, $location, authentication, user) {
