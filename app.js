@@ -10,6 +10,13 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
       templateUrl: 'names.html',
       controller: 'MainController',
       controllerAs: 'main',
+      resolve: {
+        checkAuthentication: function ($location, user) {
+          if (!user.loggedIn) {
+            $location.path('/login');
+          }
+        },
+      },
     })
     .otherwise({
       redirectTo: '/names',
