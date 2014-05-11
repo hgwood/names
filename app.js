@@ -11,10 +11,18 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
       controller: 'MainController',
       controllerAs: 'main',
       resolve: {
-        checkAuthentication: function ($location, user) {
-          if (!user.loggedIn) {
-            $location.path('/login');
-          }
+        submissions: function ($firebase, submissionFirebaseReference, defer, user, $location) {
+          return defer(function (promise) {
+            if (!user.loggedIn) {
+              promise.reject();
+              $location.path('/login');
+            } else {
+              var submissions = $firebase(submissionFirebaseReference);
+              submissions.$on('loaded', function () {
+                promise.resolve(submissions);
+              });
+            }
+          });
         },
       },
     })
@@ -96,11 +104,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
   }
 })
 
-.factory('submissionRepository', function ($firebase, submissionFirebaseReference) {
-  return submissionFirebaseReference;
-})
-
-.controller('NameSubmissionFormController', function (submissionRepository, user, $firebase) {
+.controller('NameSubmissionFormController', function (submissionFirebaseReference, user, $firebase) {
   var that = this;
 
   that.submission = '';
@@ -117,14 +121,10 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
   };
 })
 
-.controller('MainController', function ($scope, submissionRepository, $firebase) {
+.controller('MainController', function ($scope, submissions) {
   var that = this;
-  submissionRepository = $firebase(submissionRepository);
-  that.loading = true;
-  submissionRepository.$on('loaded', function () {
-    that.loading = false;
-  });
-  submissionRepository.$bind($scope, "main.names");
+  // submissions.$bind($scope, "main.names");
+  that.names = submissions;
 })
 
 .controller('SubmissionItemController', function ($scope, user) {
