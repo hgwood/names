@@ -42,19 +42,24 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
     $location.path('/names');
   };
 
-  $scope.loggingIn = true;
+  $scope.busy = true;
+  $scope.autoLoginInProgress = true;
   authentication.autoLogin().then(function (user) {
     onLoginSucess(user);
   }).catch(function () {
-    $scope.loggingIn = false;
+    $scope.autoLoginFailed = true;
+    $scope.busy = false;
   });
 
   $scope.login = function (provider) {
-    $scope.loggingIn = true;
+    $scope.busy = true;
     authentication.manualLogin(provider).then(function (user) {
+      $scope.autoLoginInProgress = false;
+      $scope.autoLoginFailed = false;
+      $scope.manuallyLoggedIn = true;
       onLoginSucess(user);
     }).catch(function (error) {
-      $scope.loggingIn = false;
+      $scope.busy = false;
       $scope.error = error;
     });
   };

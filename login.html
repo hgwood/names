@@ -8,7 +8,19 @@
   </div>
 </div>
 
-<div id="loginForm" class="row" ng-hide="loggingIn">
+<div id="loginStatus" class="row">
+  <div class="col-xs-12">
+    <p>
+      <span ng-show="autoLoginInProgress">Je devine que tu es...</span>
+      <span ng-show="manuallyLoggedIn">Bienvenue, </span>
+      <span ng-show="autoLoginFailed">arf, je ne sais pas.</span>
+      <span ng-show="user.loggedIn">{{user.name}} !</span>
+    </p>
+    <p ng-show="user.loggedIn">Je vais te chercher tes prénoms, si tu veux bien patienter. :)</p>
+  </div>
+</div>
+
+<div id="loginForm" class="row" ng-hide="busy">
   <div class="col-xs-12">
     <h1>Qui c'est ?</h1>
     <button class="btn btn-danger btn-lg" ng-click="login('google')">
@@ -31,9 +43,11 @@
   </div>
 </div>
 
-<div id="loginLoading" class="row" ng-show="loggingIn">
+<div id="loginLoading" class="row" ng-show="busy">
   <div class="col-xs-12">
-    <i class="fa fa-refresh fa-spin fa-4x"></i>
+    <div>
+      <i class="fa fa-refresh fa-spin fa-4x"></i>
+    </div>
   </div>
 </div>
 

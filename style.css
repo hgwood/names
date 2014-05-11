@@ -6,11 +6,7 @@ body {
   padding: 10px 0;
 }
 
-#loginForm {
-  text-align: center;
-}
-
-#loginLoading {
+#loginStatus, #loginForm, #loginLoading {
   text-align: center;
 }
 
