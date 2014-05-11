@@ -75,7 +75,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
   };
 })
 
-.service('user', function () {
+.factory('user', function () {
   var user;
   return {
     loggedIn: false,
