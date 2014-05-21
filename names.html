@@ -30,24 +30,17 @@
   </div>
 
   <table class="table" id="table">
-    <thead>
-      <td>Prénom</td>
-      <td>Proposé par</td>
-      <td>Note</td>
-    </thead>
     <tbody>
       <tr 
-        ng-repeat="name in main.names | orderByPriority | filter:{name: main.name}" 
+        ng-repeat="name in main.names | orderByPriority | orderBy:main.rank" 
         ng-controller="SubmissionItemController as submission">
         <td>{{name.name}}</td>
         <td>{{name.submitter}}, <span am-time-ago="name.time"></span></td>
         <td>
-          <rating 
-            readonly="true" 
-            ng-model="name.ratings[user.name]" 
-            max="3" 
-            state-off="'fa fa-star-o'" state-on="'fa fa-star'">
-          </rating>
+          <i class="fa fa-arrow-up" ng-click="main.names.up(name)" ng-hide="$first"></i>
+        </td>
+        <td>
+          <i class="fa fa-arrow-down" ng-click="main.names.down(name)" ng-hide="$last"></i>
         </td>
       </tr>
     </tbody>

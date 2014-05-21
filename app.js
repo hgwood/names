@@ -38,12 +38,21 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
   $rootScope.user = user;
 })
 
-.factory('upgrade', function () {
+.factory('upgrade', function (user) {
   return function (data) {
-    _.each(data.$getIndex(), function (key) {
+    _.each(data.$getIndex(), function (key, index) {
       var item = data[key];
       if (item.version === undefined) {
         item.version = 1;
+      }
+      if (item.version === 1) {
+        delete item.ratings;
+        item.version = 2;
+      }
+      if (item.version >= 2) {
+        if (angular.isUndefined(item.ranking)) {
+          item.ranking = {};
+        }
       }
     });
   };
@@ -139,10 +148,35 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
   };
 })
 
-.controller('MainController', function ($scope, submissions) {
+.controller('MainController', function ($scope, submissions, user, orderByPriorityFilter, orderByFilter) {
   var that = this;
   // submissions.$bind($scope, "main.names");
   that.names = submissions;
+  that.names.up = function (nameToUp) {
+    var names = orderByFilter(orderByPriorityFilter(that.names), that.rank);
+    _.each(names, function (name, index) {
+      if (name === nameToUp) {
+        name.ranking[user.name] -= 1;
+        names[index - 1].ranking[user.name] += 1;
+      }
+    });
+    submissions.$save();
+  };
+  that.names.down = function (nameToDown) {
+    var names = orderByFilter(orderByPriorityFilter(that.names), that.rank);
+    _.each(names, function (name, index) {
+      if (name === nameToDown) {
+        name.ranking[user.name] += 1;
+        names[index + 1].ranking[user.name] -= 1;
+      }
+    });
+    submissions.$save();
+  };
+  that.rank = function (submission) {
+    if (angular.isUndefined(submission.ranking[user.name]))
+      submission.ranking[user.name] = that.names.$getIndex().length + 1;
+    return submission.ranking[user.name];
+  };
 })
 
 .controller('SubmissionItemController', function ($scope, user) {
