@@ -134,6 +134,8 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
 .controller('NameSubmissionFormController', function (submissionFirebaseReference, user, $firebase) {
   var that = this;
 
+  var fb = $firebase(submissionFirebaseReference);
+
   that.submission = '';
 
   that.submit = function (name) {
@@ -141,8 +143,11 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
       name: name,
       submitter: user.name,
       time: new Date(),
+      ranking: {},
+      version: 3,
     };
-    $firebase(submissionRepository).$add(submission);
+    submission.ranking[user.name] = fb.$getIndex().length;
+    fb.$add(submission);
     that.name = '';
     that.form.$setPristine();
   };
