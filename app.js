@@ -1,3 +1,5 @@
+(function () { 'use strict';
+
 angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', 'hgDefer', 'hgUnique'])
 
 .config(function ($routeProvider) {
@@ -188,3 +190,4 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
   var that = this;
 })
 
+}())

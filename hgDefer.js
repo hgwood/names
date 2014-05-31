@@ -1,3 +1,5 @@
+(function () { 'use strict';
+
 angular.module('hgDefer', [])
 
 .factory('defer', function ($q) {
@@ -7,3 +9,5 @@ angular.module('hgDefer', [])
     return q.promise;
   };
 });
+
+}());

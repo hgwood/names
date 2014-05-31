@@ -1,3 +1,5 @@
+(function () { 'use strict';
+
 angular.module('hgUnique', [])
 
 .directive('hgUniqueAmong', function (uniqueness) {
@@ -20,8 +22,10 @@ angular.module('hgUnique', [])
 .service('uniqueness', function() {
   var that = this;
   that.check = function (value, others, field) {
-    return !_.find(others, function (other) { 
+    return !_.find(others, function (other) {
       return value === (field ? other[field] : other);
     });
   };
 });
+
+}())
