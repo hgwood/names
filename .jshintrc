@@ -1,0 +1,25 @@
+{
+  "browser": true,
+  "devel": true,
+  "jquery": true,
+  "globals": {
+    "angular": false,
+    "_": false,
+    "Firebase": false
+  },
+
+  "bitwise": true,
+  "eqeqeq": true,
+  "freeze": true,
+  "immed": true,
+  "indent": 4,
+  "latedef": true,
+  "noarg": true,
+  "nonbsp": true,
+  "quotmark": "single",
+  "undef": true,
+  "strict": true,
+  "trailing": true,
+
+  "asi": true
+}
