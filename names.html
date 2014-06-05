@@ -4,22 +4,22 @@
   <div class="jumbotron">
     <span>Hello {{user.name}} :)</span>
     <h1>Comment on l'appelle aujourd'hui ?</h1>
-    <form 
-      ng-controller="NameSubmissionFormController as submission" 
-      name="submission.form" 
+    <form
+      ng-controller="NameSubmissionFormController as submission"
+      name="submission.form"
       ng-submit="submission.submit(submission.name)">
       <div class="form-group" ng-class="{'has-error': submission.form.$invalid && submission.form.$dirty}">
-        <input 
-          type="text" 
-          class="form-control input-lg" 
+        <input
+          type="text"
+          class="form-control input-lg"
           placeholder="un petit nom ici"
           ng-model="submission.name"
           required
           hg-unique-among="main.names"
           hg-unique-field="name">
         <div>
-          <span 
-            class="label label-danger" 
+          <span
+            class="label label-danger"
             ng-show="submission.form.$dirty && submission.form.$error.unique">
             Il y est déjà celui là !
           </span>
@@ -31,16 +31,16 @@
 
   <table class="table" id="table">
     <tbody>
-      <tr 
-        ng-repeat="name in main.names | orderByPriority | orderBy:main.rank" 
+      <tr
+        ng-repeat="name in main.names | orderByPriority | orderUsing:main.ranking"
         ng-controller="SubmissionItemController as submission">
         <td>{{name.name}}</td>
         <td>{{name.submitter}}, <span am-time-ago="name.time"></span></td>
         <td>
-          <i class="fa fa-arrow-up" ng-click="main.names.up(name)" ng-hide="$first"></i>
+          <i class="fa fa-arrow-up" ng-click="main.ranking.up($index)" ng-hide="$first"></i>
         </td>
         <td>
-          <i class="fa fa-arrow-down" ng-click="main.names.down(name)" ng-hide="$last"></i>
+          <i class="fa fa-arrow-down" ng-click="main.ranking.down($index)" ng-hide="$last"></i>
         </td>
       </tr>
     </tbody>

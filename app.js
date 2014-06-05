@@ -155,35 +155,16 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
   };
 })
 
-.controller('MainController', function ($scope, submissions, user, orderByPriorityFilter, orderByFilter) {
+.filter('orderUsing', function () {
+  return function (input, ordering) {
+    return ordering.render();
+  };
+})
+
+.controller('MainController', function ($scope, submissions, user, orderByPriorityFilter, ordering) {
   var that = this;
-  // submissions.$bind($scope, "main.names");
   that.names = submissions;
-  that.names.up = function (nameToUp) {
-    var names = orderByFilter(orderByPriorityFilter(that.names), that.rank);
-    _.each(names, function (name, index) {
-      if (name === nameToUp) {
-        name.ranking[user.name] -= 1;
-        names[index - 1].ranking[user.name] += 1;
-      }
-    });
-    submissions.$save();
-  };
-  that.names.down = function (nameToDown) {
-    var names = orderByFilter(orderByPriorityFilter(that.names), that.rank);
-    _.each(names, function (name, index) {
-      if (name === nameToDown) {
-        name.ranking[user.name] += 1;
-        names[index + 1].ranking[user.name] -= 1;
-      }
-    });
-    submissions.$save();
-  };
-  that.rank = function (submission) {
-    if (angular.isUndefined(submission.ranking[user.name]))
-      submission.ranking[user.name] = that.names.$getIndex().length + 1;
-    return submission.ranking[user.name];
-  };
+  that.ranking = ordering(orderByPriorityFilter(submissions));
 })
 
 .controller('SubmissionItemController', function ($scope, user) {
