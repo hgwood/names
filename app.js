@@ -157,14 +157,14 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
 
 .filter('orderUsing', function () {
   return function (input, ordering) {
-    return ordering.render();
+    return ordering.render(input);
   };
 })
 
-.controller('MainController', function ($scope, submissions, user, orderByPriorityFilter, ordering) {
+.controller('MainController', function (submissions, ordering) {
   var that = this;
   that.names = submissions;
-  that.ranking = ordering(orderByPriorityFilter(submissions));
+  that.ranking = ordering(submissions.$getIndex().length);
 })
 
 .controller('SubmissionItemController', function ($scope, user) {
@@ -172,15 +172,15 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
 })
 
 .factory('ordering', function () {
-  return function (items) {
-    var ordering = _.range(items.length);
+  return function (length) {
+    var ordering = _.range(length);
     var orderService = {};
     orderService.using = function using(newOrdering) {
       ordering = newOrdering;
       return orderService;
     };
     orderService.up = function up(index) {
-      if (index <= 0 || index > items.length - 1) return;
+      if (index <= 0 || index > length - 1) return;
       var pulled = ordering[index];
       var pushed = ordering[index - 1];
       ordering[index] = pushed;
@@ -190,9 +190,11 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
     orderService.down = function down(index) {
       return orderService.up(index + 1)
     }
-    orderService.render = function render() {
+    orderService.render = function render(array) {
+      if (array.length !== ordering.length)
+        throw 'Cannot apply an ordering of length ' + ordering.length + ' on an array of length ' + array.length + '!';
       return _.map(ordering, function (index) {
-        return items[index];
+        return array[index];
       });
     }
     return orderService;
