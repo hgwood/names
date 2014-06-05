@@ -190,4 +190,37 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
   var that = this;
 })
 
+.factory('rankingService', function () {
+  return function (items) {
+    var ranking = _.range(items.length);
+    function using(newRanking) {
+      ranking = newRanking;
+      return service;
+    }
+    function up(index) {
+      if (index <= 0 || index > items.length - 1) return;
+      var pulled = ranking[index];
+      var pushed = ranking[index - 1];
+      ranking[index] = pushed;
+      ranking[index - 1] = pulled;
+      return service;
+    }
+    function down(index) {
+      return up(index + 1)
+    }
+    function render() {
+      return _.map(ranking, function (index) {
+        return items[index];
+      });
+    }
+    var service = {
+      using: using,
+      up: up,
+      down: down,
+      render: render,
+    };
+    return service;
+  };
+})
+
 }())
