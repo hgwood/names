@@ -157,48 +157,49 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
 
 .filter('orderUsing', function () {
   return function (input, ordering) {
-    return ordering.render(input);
+    return ordering.apply(input);
   };
 })
 
-.controller('MainController', function (submissions, ordering) {
+.controller('MainController', function (submissions, Ordering) {
   var that = this;
   that.names = submissions;
-  that.ranking = ordering(submissions.$getIndex().length);
+  that.ranking = Ordering.for(submissions.$getIndex());
 })
 
 .controller('SubmissionItemController', function ($scope, user) {
   var that = this;
 })
 
-.factory('ordering', function () {
-  return function (length) {
-    var ordering = _.range(length);
-    var orderService = {};
-    orderService.using = function using(newOrdering) {
-      ordering = newOrdering;
-      return orderService;
+.factory('Ordering', function () {
+  function Ordering(orderMap) {
+    var that = this;
+    that.up = function (index) {
+      if (index <= 0 || index > orderMap.length - 1) return;
+      var pulled = orderMap[index];
+      var pushed = orderMap[index - 1];
+      orderMap[index] = pushed;
+      orderMap[index - 1] = pulled;
+      return that;
     };
-    orderService.up = function up(index) {
-      if (index <= 0 || index > length - 1) return;
-      var pulled = ordering[index];
-      var pushed = ordering[index - 1];
-      ordering[index] = pushed;
-      ordering[index - 1] = pulled;
-      return orderService;
-    }
-    orderService.down = function down(index) {
-      return orderService.up(index + 1)
-    }
-    orderService.render = function render(array) {
-      if (array.length !== ordering.length)
-        throw 'Cannot apply an ordering of length ' + ordering.length + ' on an array of length ' + array.length + '!';
-      return _.map(ordering, function (index) {
+    that.down = function (index) {
+      return that.up(index + 1)
+    };
+    that.apply = function (array) {
+      if (array.length !== orderMap.length)
+        throw 'Cannot apply an ordering of length ' + orderMap.length + ' on an array of length ' + array.length + '!';
+      return _.map(orderMap, function (index) {
         return array[index];
       });
-    }
-    return orderService;
+    };
+  }
+  Ordering.ofLength = function (length) {
+    return new Ordering(_.range(length));
   };
+  Ordering.for = function (array) {
+    return Ordering.ofLength(array.length);
+  }
+  return Ordering;
 })
 
 }())
