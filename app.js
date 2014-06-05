@@ -190,36 +190,31 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
   var that = this;
 })
 
-.factory('rankingService', function () {
+.factory('ordering', function () {
   return function (items) {
-    var ranking = _.range(items.length);
-    function using(newRanking) {
-      ranking = newRanking;
-      return service;
-    }
-    function up(index) {
+    var ordering = _.range(items.length);
+    var orderService = {};
+    orderService.using = function using(newOrdering) {
+      ordering = newOrdering;
+      return orderService;
+    };
+    orderService.up = function up(index) {
       if (index <= 0 || index > items.length - 1) return;
-      var pulled = ranking[index];
-      var pushed = ranking[index - 1];
-      ranking[index] = pushed;
-      ranking[index - 1] = pulled;
-      return service;
+      var pulled = ordering[index];
+      var pushed = ordering[index - 1];
+      ordering[index] = pushed;
+      ordering[index - 1] = pulled;
+      return orderService;
     }
-    function down(index) {
-      return up(index + 1)
+    orderService.down = function down(index) {
+      return orderService.up(index + 1)
     }
-    function render() {
-      return _.map(ranking, function (index) {
+    orderService.render = function render() {
+      return _.map(ordering, function (index) {
         return items[index];
       });
     }
-    var service = {
-      using: using,
-      up: up,
-      down: down,
-      render: render,
-    };
-    return service;
+    return orderService;
   };
 })
 
