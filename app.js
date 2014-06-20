@@ -28,6 +28,14 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
             }
           });
         },
+        ranking: function ($firebase, rankingFirebaseReference, defer, user) {
+          return defer(function (promise) {
+            var rankings = $firebase(rankingFirebaseReference);
+            rankings.$on('loaded', function () {
+              promise.resolve(rankings[user.name]);
+            });
+          });
+        },
       },
     })
     .otherwise({
@@ -133,6 +141,15 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
   }
 })
 
+.factory('rankingFirebaseReference', function ($location, $interpolate) {
+  var url = 'boiling-fire-3739.firebaseIO.com/apps/names/{{env}}/rankings';
+  if ($location.host().match(/localhost|127\.0\.0\.1|192\.168\./)) {
+    return new Firebase($interpolate(url)({env: 'dev'}));
+  } else {
+    return new Firebase($interpolate(url)({env: 'prod'}));
+  }
+})
+
 .controller('NameSubmissionFormController', function (submissionFirebaseReference, user, $firebase) {
   var that = this;
 
@@ -161,10 +178,10 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
   };
 })
 
-.controller('MainController', function (submissions, Ordering) {
+.controller('MainController', function (submissions, ranking, Ordering) {
   var that = this;
   that.names = submissions;
-  that.ranking = Ordering.for(submissions.$getIndex());
+  that.ranking = new Ordering(ranking ? ranking : _.range(submissions.$getIndex().length));
 })
 
 .controller('SubmissionItemController', function ($scope, user) {
