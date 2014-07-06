@@ -1,4 +1,4 @@
-module.exports = function (config) {
+module.exports = function (config) { 'use strict';
   config.set({
     basePath: '.',
     files: [
@@ -25,5 +25,5 @@ module.exports = function (config) {
       'karma-jasmine',
       'karma-phantomjs-launcher'
     ]
-  });
-};
+  })
+}

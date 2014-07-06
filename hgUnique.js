@@ -13,19 +13,19 @@ angular.module('hgUnique', [])
     },
     link: function (scope, element, attrs, ngModel) {
       scope.$watch('model', function (model) {
-        ngModel.$setValidity('unique', !model || uniqueness.check(scope.model, scope.others, scope.field));
-      });
+        ngModel.$setValidity('unique', !model || uniqueness.check(scope.model, scope.others, scope.field))
+      })
     },
-  };
+  }
 })
 
 .service('uniqueness', function() {
-  var that = this;
+  var that = this
   that.check = function (value, others, field) {
     return !_.find(others, function (other) {
-      return value === (field ? other[field] : other);
-    });
-  };
-});
+      return value === (field ? other[field] : other)
+    })
+  }
+})
 
 }())
