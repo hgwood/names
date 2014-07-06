@@ -178,10 +178,15 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
   };
 })
 
-.controller('MainController', function (submissions, ranking, Ordering) {
+.controller('MainController', function (submissions, ranking, Ordering, $firebase, rankingFirebaseReference, user) {
   var that = this;
   that.names = submissions;
   that.ranking = new Ordering(ranking ? ranking : _.range(submissions.$getIndex().length));
+  that.ranking.onChange(function () {
+    var f = $firebase(rankingFirebaseReference);
+    f[user.name] = that.ranking.orderMap;
+    f.$save();
+  });
 })
 
 .controller('SubmissionItemController', function ($scope, user) {
@@ -191,12 +196,15 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
 .factory('Ordering', function () {
   function Ordering(orderMap) {
     var that = this;
+    var _listener;
+    that.orderMap = orderMap;
     that.up = function (index) {
       if (index <= 0 || index > orderMap.length - 1) return;
       var pulled = orderMap[index];
       var pushed = orderMap[index - 1];
       orderMap[index] = pushed;
       orderMap[index - 1] = pulled;
+      _listener();
       return that;
     };
     that.down = function (index) {
@@ -209,6 +217,9 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
         return array[index];
       });
     };
+    that.onChange = function (listener) {
+      _listener = listener;
+    }
   }
   Ordering.ofLength = function (length) {
     return new Ordering(_.range(length));
