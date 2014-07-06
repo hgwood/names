@@ -132,22 +132,23 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
   }
 })
 
-.factory('submissionFirebaseReference', function ($location, $interpolate) {
-  var url = 'boiling-fire-3739.firebaseIO.com/apps/names/{{env}}/submissions';
-  if ($location.host().match(/localhost|127\.0\.0\.1|192\.168\./)) {
-    return new Firebase($interpolate(url)({env: 'dev'}));
-  } else {
-    return new Firebase($interpolate(url)({env: 'prod'}));
-  }
+.factory('firebaseUrl', function ($location, $interpolate) {
+  var url = 'boiling-fire-3739.firebaseIO.com/apps/names/{{env}}/';
+  return function (path) {
+    if ($location.host().match(/localhost|127\.0\.0\.1|192\.168\./)) {
+      return new Firebase($interpolate(url + path)({env: 'dev'}));
+    } else {
+      return new Firebase($interpolate(url + path)({env: 'prod'}));
+    }
+  };
 })
 
-.factory('rankingFirebaseReference', function ($location, $interpolate) {
-  var url = 'boiling-fire-3739.firebaseIO.com/apps/names/{{env}}/rankings';
-  if ($location.host().match(/localhost|127\.0\.0\.1|192\.168\./)) {
-    return new Firebase($interpolate(url)({env: 'dev'}));
-  } else {
-    return new Firebase($interpolate(url)({env: 'prod'}));
-  }
+.factory('submissionFirebaseReference', function (firebaseUrl) {
+  return firebaseUrl('submissions');
+})
+
+.factory('rankingFirebaseReference', function (firebaseUrl) {
+  return firebaseUrl('rankings');
 })
 
 .controller('NameSubmissionFormController', function (submissionFirebaseReference, user, $firebase) {
