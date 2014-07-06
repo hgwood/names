@@ -151,10 +151,11 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
   return firebaseUrl('rankings');
 })
 
-.controller('NameSubmissionFormController', function (submissionFirebaseReference, user, $firebase) {
+.controller('NameSubmissionFormController', function (submissionFirebaseReference, user, $firebase, rankingFirebaseReference) {
   var that = this;
 
   var fb = $firebase(submissionFirebaseReference);
+  var fbr = $firebase(rankingFirebaseReference);
 
   that.submission = '';
 
@@ -166,8 +167,9 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
       ranking: {},
       version: 3,
     };
-    submission.ranking[user.name] = fb.$getIndex().length;
     fb.$add(submission);
+    fbr[user.name][fbr[user.name].length] = fbr[user.name].length;
+    fbr.$save();
     that.name = '';
     that.form.$setPristine();
   };
@@ -175,16 +177,20 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
 
 .filter('orderUsing', function () {
   return function (input, ordering) {
+    ordering.resize(input.length);
     return ordering.apply(input);
   };
 })
 
 .controller('MainController', function (submissions, ranking, Ordering, $firebase, rankingFirebaseReference, user) {
+  var f = $firebase(rankingFirebaseReference);
+  f.$on('change', function () {
+    that.ranking = new Ordering(f[user.name] ? f[user.name] : _.range(submissions.$getIndex().length));
+  });
   var that = this;
   that.names = submissions;
   that.ranking = new Ordering(ranking ? ranking : _.range(submissions.$getIndex().length));
   that.ranking.onChange(function () {
-    var f = $firebase(rankingFirebaseReference);
     f[user.name] = that.ranking.orderMap;
     f.$save();
   });
@@ -218,9 +224,22 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
         return array[index];
       });
     };
+    that.resize = function (newSize) {
+      console.log(orderMap.length, newSize)
+      if (newSize > orderMap.length) {
+        for (var i = orderMap.length; i < newSize; i++) {
+          orderMap[i] = i;
+        }
+      } else if (newSize < orderMap.length) {
+        for (var i = newSize; i < orderMap.length; i++) {
+          delete orderMap[i];
+        }
+        orderMap.length = newSize;
+      }
+    };
     that.onChange = function (listener) {
       _listener = listener;
-    }
+    };
   }
   Ordering.ofLength = function (length) {
     return new Ordering(_.range(length));
