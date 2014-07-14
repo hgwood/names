@@ -30,3 +30,7 @@ button.btn {
 .fa-star, .fa-star-o {
   color: #FFDF00;
 }
+
+.vetoed {
+  color: lightgrey;
+}
