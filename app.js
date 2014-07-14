@@ -194,6 +194,11 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
     f[user.name] = that.ranking.orderMap
     f.$save()
   })
+
+  that.veto = function (submission) {
+    submission.vetoed = !submission.vetoed
+    submissions.$save()
+  }
 })
 
 .controller('SubmissionItemController', function ($scope, user) {
