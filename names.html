@@ -30,9 +30,9 @@
   </div>
 
   <table class="table" id="table">
-    <tbody>
+    <tbody ui-sortable="main.sortableOptions" ng-model="main.names">
       <tr
-        ng-repeat="name in main.names | orderByPriority | orderUsing:main.ranking"
+        ng-repeat="name in main.names"
         ng-controller="SubmissionItemController as submission"
         ng-class="{vetoed: name.gender === 'female' || name.vetoed === true}">
         <td>{{name.name}}</td>

@@ -1,6 +1,6 @@
 (function () { 'use strict';
 
-angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', 'hgDefer', 'hgUnique'])
+angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment', 'firebase', 'hgDefer', 'hgUnique'])
 
 .config(function ($routeProvider) {
   $routeProvider
@@ -13,27 +13,17 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
       controller: 'MainController',
       controllerAs: 'main',
       resolve: {
-        submissions: function ($firebase, submissionFirebaseReference, defer, user, $location, upgrade) {
+        submissions: function ($firebase, submissionFirebaseReference, defer, user, $location) {
           return defer(function (promise) {
             if (!user.loggedIn) {
               promise.reject()
               $location.path('/login')
             } else {
-              var submissions = $firebase(submissionFirebaseReference)
-              submissions.$on('loaded', function () {
-                upgrade(submissions)
-                submissions.$save()
+              var submissions = $firebase(submissionFirebaseReference).$asArray()
+              submissions.$loaded().then(function () {
                 promise.resolve(submissions)
               })
             }
-          })
-        },
-        ranking: function ($firebase, rankingFirebaseReference, defer, user) {
-          return defer(function (promise) {
-            var rankings = $firebase(rankingFirebaseReference)
-            rankings.$on('loaded', function () {
-              promise.resolve(rankings[user.name])
-            })
           })
         },
       },
@@ -46,26 +36,6 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
 .run(function (amMoment, $rootScope, user) {
   amMoment.changeLanguage('fr')
   $rootScope.user = user
-})
-
-.factory('upgrade', function (user) {
-  return function (data) {
-    _.each(data.$getIndex(), function (key, index) {
-      var item = data[key]
-      if (item.version === undefined) {
-        item.version = 1
-      }
-      if (item.version === 1) {
-        delete item.ratings
-        item.version = 2
-      }
-      if (item.version >= 2) {
-        if (angular.isUndefined(item.ranking)) {
-          item.ranking = {}
-        }
-      }
-    })
-  }
 })
 
 .controller('loginController', function ($scope, $location, authentication, user) {
@@ -147,53 +117,41 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
   return firebaseUrl('submissions')
 })
 
-.factory('rankingFirebaseReference', function (firebaseUrl) {
-  return firebaseUrl('rankings')
-})
-
-.controller('NameSubmissionFormController', function (submissionFirebaseReference, user, $firebase, rankingFirebaseReference) {
+.controller('NameSubmissionFormController', function (submissionFirebaseReference, user, $firebase) {
   var that = this
 
-  var fb = $firebase(submissionFirebaseReference)
-  var fbr = $firebase(rankingFirebaseReference)
+  var fb = $firebase(submissionFirebaseReference).$asArray()
 
   that.submission = ''
 
   that.submit = function (name) {
-    var submission = {
+    fb.$add({
       name: name,
       submitter: user.name,
       time: new Date(),
-      ranking: {},
-      version: 3,
-    }
-    fb.$add(submission)
-    fbr[user.name][fbr[user.name].length] = fbr[user.name].length
-    fbr.$save()
+    })
     that.name = ''
     that.form.$setPristine()
   }
 })
 
-.filter('orderUsing', function () {
-  return function (input, ordering) {
-    ordering.resize(input.length)
-    return ordering.apply(input)
-  }
-})
-
-.controller('MainController', function (submissions, ranking, Ordering, $firebase, rankingFirebaseReference, user) {
-  var f = $firebase(rankingFirebaseReference)
-  f.$on('change', function () {
-    that.ranking = new Ordering(f[user.name] ? f[user.name] : _.range(submissions.$getIndex().length))
-  })
+.controller('MainController', function (submissions) {
   var that = this
   that.names = submissions
-  that.ranking = new Ordering(ranking ? ranking : _.range(submissions.$getIndex().length))
-  that.ranking.onChange(function () {
-    f[user.name] = that.ranking.orderMap
-    f.$save()
-  })
+  that.sortableOptions = (function () {
+    var ids
+    return {
+      update: function () {
+        ids = _.map(submissions, '$id') // saving the order of ids before modification
+      },
+      stop: function () {
+        _(ids).zip(submissions).zipObject().each(function (submission, newId) {
+          submission.$id = newId
+          that.names.$save(submission)
+        })
+      }
+    }
+  }())
 
   that.veto = function (submission) {
     submission.vetoed = !submission.vetoed
@@ -203,56 +161,6 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'angularMoment', 'firebase', '
 
 .controller('SubmissionItemController', function ($scope, user) {
   var that = this
-})
-
-.factory('Ordering', function () {
-  function Ordering(orderMap) {
-    var that = this
-    var _listener
-    that.orderMap = orderMap
-    that.up = function (index) {
-      if (index <= 0 || index > orderMap.length - 1) return
-      var pulled = orderMap[index]
-      var pushed = orderMap[index - 1]
-      orderMap[index] = pushed
-      orderMap[index - 1] = pulled
-      _listener()
-      return that
-    }
-    that.down = function (index) {
-      return that.up(index + 1)
-    }
-    that.apply = function (array) {
-      if (array.length !== orderMap.length)
-        throw 'Cannot apply an ordering of length ' + orderMap.length + ' on an array of length ' + array.length + '!'
-      return _.map(orderMap, function (index) {
-        return array[index]
-      })
-    }
-    that.resize = function (newSize) {
-      var i;
-      if (newSize > orderMap.length) {
-        for (i = orderMap.length; i < newSize; i++) {
-          orderMap[i] = i
-        }
-      } else if (newSize < orderMap.length) {
-        for (i = newSize; i < orderMap.length; i++) {
-          delete orderMap[i]
-        }
-        orderMap.length = newSize
-      }
-    }
-    that.onChange = function (listener) {
-      _listener = listener
-    }
-  }
-  Ordering.ofLength = function (length) {
-    return new Ordering(_.range(length))
-  }
-  Ordering.for = function (array) {
-    return Ordering.ofLength(array.length)
-  }
-  return Ordering
 })
 
 }())
