@@ -13,7 +13,8 @@
     "firebase-simple-login": "1.6.x",
     "lodash": "~2.4.1",
     "angular-ui-sortable": "~0.12.8",
-    "angularfire": "~0.8.0"
+    "angularfire": "~0.8.0",
+    "jquery-ui-touch-punch": "*"
   },
   "devDependencies": {
     "angular-mocks": "1.2.x"
