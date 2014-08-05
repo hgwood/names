@@ -1,50 +1,66 @@
-<div class="row">
-<div class="col-sm-12 col-md-8 col-md-offset-2">
+<div class="jumbotron">
 
-  <div class="jumbotron">
-    <span>Hello {{user.name}} :)</span>
-    <h1>Comment on l'appelle aujourd'hui ?</h1>
-    <form
-      ng-controller="NameSubmissionFormController as submission"
-      name="submission.form"
-      ng-submit="submission.submit(submission.name)">
-      <div class="form-group" ng-class="{'has-error': submission.form.$invalid && submission.form.$dirty}">
-        <input
-          type="text"
-          class="form-control input-lg"
-          placeholder="un petit nom ici"
-          ng-model="submission.name"
-          required
-          hg-unique-among="main.names"
-          hg-unique-field="name">
-        <div>
-          <span
-            class="label label-danger"
-            ng-show="submission.form.$dirty && submission.form.$error.unique">
-            Il y est déjà celui là !
-          </span>
+  <!-- <span>Hello {{user.name}} :)</span> -->
+  <h1>Comment on l'appelle aujourd'hui ?</h1>
+  <!-- <form
+    ng-controller="NameSubmissionFormController as submission"
+    name="submission.form"
+    ng-submit="submission.submit(submission.name)">
+    <div class="form-group" ng-class="{'has-error': submission.form.$invalid && submission.form.$dirty}">
+      <input
+        type="text"
+        class="form-control input-lg"
+        placeholder="un petit nom ici"
+        ng-model="submission.name"
+        required
+        hg-unique-among="main.names"
+        hg-unique-field="name">
+      <div>
+        <span
+          class="label label-danger"
+          ng-show="submission.form.$dirty && submission.form.$error.unique">
+          Il y est déjà celui là !
+        </span>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-lg" ng-disabled="submission.form.$invalid">C'est parti !</button>
+  </form> -->
+  <paper-fab class="pull-right" icon="add"></paper-fab>
+</div>
+
+<div class="container">
+<div class="row">
+<div class="col-xs-12">
+
+  <ul class="media-list" ui-sortable="main.sortableOptions" ng-model="main.ranking">
+    <li
+      class="media"
+      ng-repeat="name in main.names | orderUsing:main.ranking"
+      ng-controller="SubmissionItemController as submission">
+      <paper-shadow z="1">
+      <div class="row">
+        <div class="col-xs-2">
+          <div ng-show="name.gender === 'female'" class="text-accent-dark">
+            <span class="gender-disc female sortable-handle"></span>
+          </div>
+          <div ng-show="name.gender === 'male'" class="text-primary-dark">
+            <span class="gender-disc male sortable-handle"></span>
+          </div>
+        </div>
+        <div class="col-xs-10">
+        <div class="media-body">
+          <h4 class="media-heading">{{name.name}}</h4>
+          <p>proposé par {{name.submitter}}, <span am-time-ago="name.time"></span></p>
+        </div>
         </div>
       </div>
-      <button class="btn btn-primary btn-lg" ng-disabled="submission.form.$invalid">C'est parti !</button>
-    </form>
-  </div>
-
-  <table class="table" id="table">
-    <tbody ui-sortable="main.sortableOptions" ng-model="main.ranking">
-      <tr
-        ng-repeat="name in main.names | orderUsing:main.ranking"
-        ng-controller="SubmissionItemController as submission"
-        ng-class="{vetoed: name.gender === 'female' || name.vetoed === true}">
-        <td>{{name.name}}</td>
-        <td>{{name.submitter}}, <span am-time-ago="name.time"></span></td>
-        <td><i class="fa fa-bars sortable-handle"></i></td>
-      </tr>
-    </tbody>
-  </table>
+    </li>
+  </ul>
 
   <div class="col-xs-4 col-xs-offset-4" ng-show="main.loading">
     <i class="fa fa-spinner fa-spin fa-4x"></i>
   </div>
 
+</div>
 </div>
 </div>

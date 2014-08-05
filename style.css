@@ -1,5 +1,28 @@
+body {
+  font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial;
+  margin: 0;
+  padding: 0;
+  color: rgba(0, 0, 0, 222);
+  background: #303f9f;
+}
+
 #loginStatus, #loginForm, #loginLoading {
   text-align: center;
+}
+
+.jumbotron {
+  background: #3f51b5;
+  color: rgba(255, 255, 255, 222);
+}
+
+.jumbotron h1 {
+  font-size: 54px;
+  font-weight: 200;
+}
+
+paper-fab {
+  background: #ff4081;
+  color: rgba(255, 255, 255, 222);
 }
 
 .vetoed {
@@ -8,4 +31,41 @@
 
 .sortable-handle {
   cursor: pointer;
+}
+
+.text-accent {
+  color: #ff4081;
+}
+
+.text-accent-dark {
+  color: #f50057;
+}
+
+.text-primary-dark {
+  color: #303f9f;
+}
+
+.gender-disc {
+  width: 56px;
+  height: 56px;
+  display: inline-block;
+  border-radius: 50%;
+  text-align: center;
+  vertical-align: middle;
+  color: white;
+  font-size: 30px;
+}
+
+.gender-disc.female {
+  background: #f50057;
+}
+
+.gender-disc.male {
+  background: #303f9f;
+}
+
+.media {
+  background: white;
+  padding: 10px;
+  margin: 2px 0;
 }
