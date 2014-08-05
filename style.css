@@ -1,34 +1,5 @@
-body {
-  font-size: 300%;
-}
-
-.row {
-  padding: 10px 0;
-}
-
 #loginStatus, #loginForm, #loginLoading {
   text-align: center;
-}
-
-.jumbotron h1 {
-  font-size: 150%;
-}
-
-h1 {
-  font-size: 150%;
-}
-
-input.form-control {
-  font-size: 100%;
-  height: 20%;
-}
-
-button.btn {
-  font-size: 100%;
-}
-
-.fa-star, .fa-star-o {
-  color: #FFDF00;
 }
 
 .vetoed {
