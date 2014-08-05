@@ -145,13 +145,19 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
 .filter('orderUsing', function () {
   return function (items, ranking) {
     if (!ranking) return
-    return _.map(ranking, function (index) {
-      return items[index.$value]
+    return _.map(ranking, function (rank) {
+      return items[items.$indexFor(rank.$value)]
     })
   }
 })
 
 .controller('MainController', function (submissions, ranking, user) {
+  _.each(submissions, function (submission, index) {
+    if (index >= ranking.length) ranking.$add(submission.$id)
+  })
+  _.each(ranking, function (rank, index) {
+    if (index >= submissions.length) ranking.$remove(index)
+  })
   var that = this
   that.names = submissions
   that.ranking = ranking
