@@ -37,15 +37,7 @@
         ng-class="{vetoed: name.gender === 'female' || name.vetoed === true}">
         <td>{{name.name}}</td>
         <td>{{name.submitter}}, <span am-time-ago="name.time"></span></td>
-        <td>
-          <i class="fa fa-arrow-up" ng-click="main.ranking.up($index)" ng-hide="$first"></i>
-        </td>
-        <td>
-          <i class="fa fa-arrow-down" ng-click="main.ranking.down($index)" ng-hide="$last"></i>
-        </td>
-        <td>
-          <i class="fa fa-trash-o" ng-click="main.veto(name)"></i>
-        </td>
+        <td><i class="fa fa-bars sortable-handle"></i></td>
       </tr>
     </tbody>
   </table>

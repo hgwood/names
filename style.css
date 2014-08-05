@@ -34,3 +34,7 @@ button.btn {
 .vetoed {
   color: lightgrey;
 }
+
+.sortable-handle {
+  cursor: pointer;
+}

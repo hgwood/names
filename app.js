@@ -141,6 +141,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
   that.sortableOptions = (function () {
     var ids
     return {
+      handle: '.sortable-handle',
       update: function () {
         ids = _.map(submissions, '$id') // saving the order of ids before modification
       },
