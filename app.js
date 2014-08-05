@@ -7,37 +7,33 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
     .when('/login', {
       templateUrl: 'login.html',
       controller: 'loginController',
+      isLoginPage: true,
     })
     .when('/names', {
       templateUrl: 'names.html',
       controller: 'MainController',
       controllerAs: 'main',
       resolve: {
-        submissions: function (getSubmissions, defer, user, $location) {
-          return defer(function (promise) {
-            if (!user.loggedIn) {
-              promise.reject()
-              $location.path('/login')
-            } else {
-              getSubmissions().$loaded().then(function (submissions) {
-                promise.resolve(submissions)
-              })
-            }
-          })
-        },
-        ranking: function (rankingOf, user) {
-          return rankingOf(user.name).$loaded()
-        }
+        submissions: function (getSubmissions) { return getSubmissions().$loaded() },
+        ranking: function (rankingOf, user) { return rankingOf(user.name).$loaded() },
       },
+      requireLogin: true,
     })
     .otherwise({
       redirectTo: '/names',
     })
 })
 
-.run(function (amMoment, $rootScope, user) {
+.run(function ($rootScope, $location, amMoment, user) {
   amMoment.changeLanguage('fr')
   $rootScope.user = user
+  $rootScope.$on('$routeChangeStart', function (event, next, current) {
+    if (!user.loggedIn && next.requireLogin) {
+      $location.path('/login')
+    } else if (user.loggedIn && next.isLoginPage) {
+      $location.path('/names')
+    }
+  });
 })
 
 .controller('loginController', function ($scope, $location, authentication, user) {
