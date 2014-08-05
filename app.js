@@ -13,19 +13,21 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
       controller: 'MainController',
       controllerAs: 'main',
       resolve: {
-        submissions: function ($firebase, submissionFirebaseReference, defer, user, $location) {
+        submissions: function (getSubmissions, defer, user, $location) {
           return defer(function (promise) {
             if (!user.loggedIn) {
               promise.reject()
               $location.path('/login')
             } else {
-              var submissions = $firebase(submissionFirebaseReference).$asArray()
-              submissions.$loaded().then(function () {
+              getSubmissions().$loaded().then(function (submissions) {
                 promise.resolve(submissions)
               })
             }
           })
         },
+        ranking: function (rankingOf, user) {
+          return rankingOf(user.name).$loaded()
+        }
       },
     })
     .otherwise({
@@ -113,19 +115,28 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
   }
 })
 
-.factory('submissionFirebaseReference', function (firebaseUrl) {
+.factory('submissionFirebaseReference', function ($firebase, firebaseUrl) {
   return firebaseUrl('submissions')
 })
 
-.controller('NameSubmissionFormController', function (submissionFirebaseReference, user, $firebase) {
+.factory('getSubmissions', function ($firebase, submissionFirebaseReference) {
+  return function () {
+    return $firebase(submissionFirebaseReference).$asArray()
+  }
+})
+
+.factory('rankingOf', function ($firebase, firebaseUrl) {
+  return function (username) {
+    return $firebase(firebaseUrl('rankings/' + username)).$asArray()
+  }
+})
+
+.controller('NameSubmissionFormController', function (getSubmissions, user) {
   var that = this
-
-  var fb = $firebase(submissionFirebaseReference).$asArray()
-
+  var submissions = getSubmissions()
   that.submission = ''
-
   that.submit = function (name) {
-    fb.$add({
+    submissions.$add({
       name: name,
       submitter: user.name,
       time: new Date().toISOString(),
@@ -135,20 +146,30 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
   }
 })
 
-.controller('MainController', function (submissions) {
+.filter('orderUsing', function () {
+  return function (items, ranking) {
+    if (!ranking) return
+    return _.map(ranking, function (index) {
+      return items[index.$value]
+    })
+  }
+})
+
+.controller('MainController', function (submissions, ranking, user) {
   var that = this
   that.names = submissions
+  that.ranking = ranking
   that.sortableOptions = (function () {
     var ids
     return {
       handle: '.sortable-handle',
       update: function () {
-        ids = _.map(submissions, '$id') // saving the order of ids before modification
+        ids = _.map(ranking, '$id') // saving the order of ids before modification
       },
       stop: function () {
-        _(ids).zip(submissions).zipObject().each(function (submission, newId) {
-          submission.$id = newId
-          that.names.$save(submission)
+        _(ids).zip(ranking).zipObject().each(function (rank, newId) {
+          rank.$id = newId
+          ranking.$save(rank)
         })
       }
     }
