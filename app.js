@@ -128,7 +128,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
     fb.$add({
       name: name,
       submitter: user.name,
-      time: new Date(),
+      time: new Date().toISOString(),
     })
     that.name = ''
     that.form.$setPristine()
