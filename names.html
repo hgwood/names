@@ -1,34 +1,45 @@
 <div class="jumbotron">
-
-  <!-- <span>Hello {{user.name}} :)</span> -->
   <h1>Comment on l'appelle aujourd'hui ?</h1>
-  <!-- <form
-    ng-controller="NameSubmissionFormController as submission"
-    name="submission.form"
-    ng-submit="submission.submit(submission.name)">
-    <div class="form-group" ng-class="{'has-error': submission.form.$invalid && submission.form.$dirty}">
-      <input
-        type="text"
-        class="form-control input-lg"
-        placeholder="un petit nom ici"
-        ng-model="submission.name"
-        required
-        hg-unique-among="main.names"
-        hg-unique-field="name">
-      <div>
-        <span
-          class="label label-danger"
-          ng-show="submission.form.$dirty && submission.form.$error.unique">
-          Il y est déjà celui là !
-        </span>
-      </div>
-    </div>
-    <button class="btn btn-primary btn-lg" ng-disabled="submission.form.$invalid">C'est parti !</button>
-  </form> -->
-  <paper-fab class="pull-right" icon="add"></paper-fab>
 </div>
 
 <div class="container">
+
+<div class="row">
+<div class="col-xs-12">
+
+  <ul class="media-list">
+    <li class="media">
+      <form
+        ng-controller="NameSubmissionFormController as submission"
+        name="submission.form"
+        ng-submit="submission.submit(submission.name)">
+        <div ng-class="{'has-error': submission.form.$invalid && submission.form.$dirty}">
+          <div center horizontal layout>
+          <input
+            type="text"
+            class="input-paper"
+            placeholder="un petit nom ici"
+            ng-model="submission.name"
+            required
+            hg-unique-among="main.names"
+            hg-unique-field="name">
+            <paper-toggle-button ng-model="submission.female"></paper-toggle-button>
+          </div>
+          <div>
+            <span
+              class="label label-danger"
+              ng-show="submission.form.$dirty && submission.form.$error.unique">
+              Il y est déjà celui là !
+            </span>
+          </div>
+        </div>
+      </form>
+    </li>
+  </ul>
+
+</div>
+</div>
+
 <div class="row">
 <div class="col-xs-12">
 
@@ -56,10 +67,6 @@
       </div>
     </li>
   </ul>
-
-  <div class="col-xs-4 col-xs-offset-4" ng-show="main.loading">
-    <i class="fa fa-spinner fa-spin fa-4x"></i>
-  </div>
 
 </div>
 </div>

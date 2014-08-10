@@ -1,6 +1,6 @@
 (function () { 'use strict';
 
-angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment', 'firebase', 'hgDefer', 'hgUnique'])
+angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment', 'firebase', 'ng-polymer-elements', 'hgDefer', 'hgUnique'])
 
 .config(function ($routeProvider) {
   $routeProvider
@@ -61,6 +61,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
     }).catch(function (error) {
       $scope.busy = false
       $scope.error = error
+      $scope.errorDialogOpened = true
     })
   }
 })
@@ -131,11 +132,13 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
   var that = this
   var submissions = getSubmissions()
   that.submission = ''
+  that.female = false
   that.submit = function (name) {
     submissions.$add({
       name: name,
       submitter: user.name,
       time: new Date().toISOString(),
+      gender: that.female ? 'female' : 'male',
     })
     that.name = ''
     that.form.$setPristine()

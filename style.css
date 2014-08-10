@@ -2,17 +2,20 @@ body {
   font-family: RobotoDraft, 'Helvetica Neue', Helvetica, Arial;
   margin: 0;
   padding: 0;
-  color: rgba(0, 0, 0, 222);
+  color: rgba(255, 255, 255, 222);
   background: #303f9f;
 }
 
-#loginStatus, #loginForm, #loginLoading {
-  text-align: center;
+#loginForm h1 {
+  font-weight: 200;
+}
+
+#loginButton {
+  background: #ff4081;
 }
 
 .jumbotron {
   background: #3f51b5;
-  color: rgba(255, 255, 255, 222);
 }
 
 .jumbotron h1 {
@@ -22,7 +25,6 @@ body {
 
 paper-fab {
   background: #ff4081;
-  color: rgba(255, 255, 255, 222);
 }
 
 .vetoed {
@@ -66,6 +68,43 @@ paper-fab {
 
 .media {
   background: white;
+  color: rgba(0, 0, 0, 222);
   padding: 10px;
   margin: 2px 0;
+}
+
+.input-paper {
+  border: none;
+  display: block;
+  width: 90%;
+  font-size: 120%;
+}
+
+.input-paper:focus {
+  outline: 0;
+}
+
+paper-toggle-button::shadow paper-radio-button::shadow #ink {
+  color: #f50057;
+}
+
+paper-toggle-button::shadow paper-radio-button::shadow #ink[checked] {
+  color: #303f9f;
+}
+
+paper-toggle-button::shadow paper-radio-button::shadow #offRadio {
+  background-color: #303f9f;
+  border-color: #303f9f;
+}
+
+paper-toggle-button::shadow paper-radio-button::shadow #onRadio {
+  background-color: #f50057;
+}
+
+paper-toggle-button::shadow #toggleBar {
+  background-color: #303f9f;
+}
+
+paper-toggle-button::shadow #toggleBar[checked] {
+  background-color: #f50057;
 }
