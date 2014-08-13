@@ -11,7 +11,7 @@
   </div>
 </div>
 
-<div>
+<div ng-if="errorDialogOpened">
   <paper-dialog ng-opened="errorDialogOpened" heading="Erreur" transition="paper-dialog-transition-center">
     <p ng-show="!!error.message">{{error.message}}</p>
     <p>Code : {{error.code}}</p>
