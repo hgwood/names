@@ -41,7 +41,7 @@
   <ul class="media-list" ui-sortable="main.sortableOptions" ng-model="main.ranking">
     <li
       class="media"
-      ng-repeat="name in main.ranking | mapTo:main.names">
+      ng-repeat="name in main.ranking | mapTo:main.names | anonymizeUsing:main.randomNames:main.demo">
       <div class="row">
         <div class="col-xs-2">
           <div ng-show="name.gender === 'female'" class="text-accent-dark">

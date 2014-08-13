@@ -30,6 +30,20 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
           })
         },
         ranking: function (rankingOf, user) { return rankingOf(user.name).$loaded() },
+        randomNames: function ($http) {
+          var genders = ['male', 'female']
+          var submitters = ['Hugo', 'Amandine']
+          return $http.get('random.json').then(function (response) {
+            return _.map(response.data, function (name) {
+              return {
+                name: name,
+                gender: _.sample(genders),
+                submitter: _.sample(submitters),
+                time: new Date(),
+              }
+            })
+          })
+        }
       },
       requireLogin: true,
     })
@@ -151,8 +165,16 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
   }
 })
 
-.controller('MainController', function (submissions, ranking, user) {
+.filter('anonymizeUsing', function ($http) {
+  return function (names, randomNames, active) {
+    return active ? randomNames : names
+  }
+})
+
+.controller('MainController', function ($location, submissions, ranking, user, randomNames) {
   var that = this
+  that.demo = $location.search().demo !== undefined
+  that.randomNames = randomNames
   that.names = submissions
   that.ranking = ranking
   that.sortableOptions = (function () {
@@ -163,6 +185,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
         ids = _.map(ranking, '$id') // saving the order of ids before modification
       },
       stop: function () {
+        if (that.demo) return
         _(ids).zip(ranking).zipObject().each(function (rank, newId) {
           rank.$id = newId
           ranking.$save(rank)
