@@ -14,7 +14,21 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
       controller: 'MainController',
       controllerAs: 'main',
       resolve: {
-        submissions: function (getSubmissions) { return getSubmissions().$loaded() },
+        submissions: function ($q, getSubmissions, rankingOf, user) {
+          if (!user.loggedIn) return null
+          var submissions = getSubmissions()
+          return $q.all([submissions.$loaded(), rankingOf(user.name).$loaded()]).then(function (s) {
+            var submissions = s[0]
+            var ranking = s[1]
+            _.each(submissions, function (submission, index) {
+              if (index >= ranking.length) ranking.$add(submission.$id)
+            })
+            _.each(ranking, function (rank, index) {
+              if (index >= submissions.length) ranking.$remove(index)
+            })
+            return submissions.$loaded()
+          })
+        },
         ranking: function (rankingOf, user) { return rankingOf(user.name).$loaded() },
       },
       requireLogin: true,
@@ -128,26 +142,9 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
   }
 })
 
-.controller('NameSubmissionFormController', function (getSubmissions, user) {
-  var that = this
-  var submissions = getSubmissions()
-  that.submission = ''
-  that.female = false
-  that.submit = function (name) {
-    submissions.$add({
-      name: name,
-      submitter: user.name,
-      time: new Date().toISOString(),
-      gender: that.female ? 'female' : 'male',
-    })
-    that.name = ''
-    that.form.$setPristine()
-  }
-})
-
-.filter('orderUsing', function () {
-  return function (items, ranking) {
-    if (!ranking) return
+.filter('mapTo', function () {
+  return function (ranking, items) {
+    if (!ranking || !items) return
     return _.map(ranking, function (rank) {
       return items[items.$indexFor(rank.$value)]
     })
@@ -155,12 +152,6 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
 })
 
 .controller('MainController', function (submissions, ranking, user) {
-  _.each(submissions, function (submission, index) {
-    if (index >= ranking.length) ranking.$add(submission.$id)
-  })
-  _.each(ranking, function (rank, index) {
-    if (index >= submissions.length) ranking.$remove(index)
-  })
   var that = this
   that.names = submissions
   that.ranking = ranking
@@ -182,12 +173,23 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
 
   that.veto = function (submission) {
     submission.vetoed = !submission.vetoed
-    submissions.$save()
+    submissions.$save(submission)
   }
-})
 
-.controller('SubmissionItemController', function ($scope, user) {
-  var that = this
+  that.name = ''
+  that.female = false
+  that.submit = function (name) {
+    submissions.$add({
+      name: name,
+      submitter: user.name,
+      time: new Date().toISOString(),
+      gender: that.female ? 'female' : 'male',
+    }).then(function (ref) {
+      ranking.$add(ref.name())
+    })
+    that.name = ''
+    that.form.$setPristine()
+  }
 })
 
 }())

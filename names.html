@@ -10,25 +10,24 @@
   <ul class="media-list">
     <li class="media">
       <form
-        ng-controller="NameSubmissionFormController as submission"
-        name="submission.form"
-        ng-submit="submission.submit(submission.name)">
-        <div ng-class="{'has-error': submission.form.$invalid && submission.form.$dirty}">
+        name="main.form"
+        ng-submit="main.submit(main.name)">
+        <div ng-class="{'has-error': main.form.$invalid && main.form.$dirty}">
           <div center horizontal layout>
           <input
             type="text"
             class="input-paper"
             placeholder="un petit nom ici"
-            ng-model="submission.name"
+            ng-model="main.name"
             required
             hg-unique-among="main.names"
             hg-unique-field="name">
-            <paper-toggle-button ng-model="submission.female"></paper-toggle-button>
+            <paper-toggle-button ng-model="main.female"></paper-toggle-button>
           </div>
           <div>
             <span
               class="label label-danger"
-              ng-show="submission.form.$dirty && submission.form.$error.unique">
+              ng-show="main.form.$dirty && main.form.$error.unique">
               Il y est déjà celui là !
             </span>
           </div>
@@ -46,9 +45,7 @@
   <ul class="media-list" ui-sortable="main.sortableOptions" ng-model="main.ranking">
     <li
       class="media"
-      ng-repeat="name in main.names | orderUsing:main.ranking"
-      ng-controller="SubmissionItemController as submission">
-      <paper-shadow z="1">
+      ng-repeat="name in main.ranking | mapTo:main.names">
       <div class="row">
         <div class="col-xs-2">
           <div ng-show="name.gender === 'female'" class="text-accent-dark">
