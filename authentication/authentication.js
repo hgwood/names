@@ -18,7 +18,7 @@ angular.module('names.authentication', ['ngRoute', 'hgFirebaseAuthentication'])
     } else if (FirebaseAuthentication.loggedIn() && next.isLoginPage) {
       $location.path('/names')
     }
-  });
+  })
   FirebaseUser.get().then(function (user) {
     $rootScope.user = {
       isLoggedIn: true,
