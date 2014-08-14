@@ -1,6 +1,6 @@
 (function () { 'use strict';
 
-angular.module('hgFirebaseAuthentication', ['firebase'])
+angular.module('hgFirebaseAuthentication', ['firebase', 'hgDefer'])
 
 .provider('FirebaseAuthentication', function () {
   var that = this
