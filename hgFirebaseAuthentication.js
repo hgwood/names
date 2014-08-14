@@ -33,15 +33,14 @@ angular.module('hgFirebaseAuthentication', ['firebase'])
   }
 })
 
-.factory('FirebaseUser', function ($q) {
+.service('FirebaseUser', function ($q) {
   var defer = $q.defer()
-  var getter = function () {
+  this.get = function () {
     return defer.promise
   }
-  getter.resolve = function (user) {
+  this.set = function (user) {
     defer.resolve(user)
   }
-  return getter
 })
 
 }())

@@ -11,7 +11,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
       controllerAs: 'main',
       resolve: {
         submissions: function ($q, getSubmissions, rankingOf, FirebaseUser, FirebaseAuthentication) {
-          return FirebaseUser().then(function (user) {
+          return FirebaseUser.get().then(function (user) {
             var submissions = getSubmissions()
             return $q.all([submissions.$loaded(), rankingOf(user.name).$loaded()]).then(function (s) {
               var submissions = s[0]
@@ -27,7 +27,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
           })
         },
         ranking: function (rankingOf, FirebaseUser) {
-          return FirebaseUser().then(function (user) {
+          return FirebaseUser.get().then(function (user) {
             return rankingOf(user.name).$loaded()
           })
         },
@@ -105,7 +105,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
 
 .controller('MainController', function ($location, submissions, ranking, FirebaseUser, randomNames) {
   var that = this
-  FirebaseUser().then(function (user) {
+  FirebaseUser.get().then(function (user) {
     that.demo = $location.search().demo !== undefined
     that.randomNames = randomNames
     that.names = submissions

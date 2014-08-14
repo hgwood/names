@@ -19,7 +19,7 @@ angular.module('names.authentication', ['ngRoute', 'hgFirebaseAuthentication'])
       $location.path('/names')
     }
   });
-  FirebaseUser().then(function (user) {
+  FirebaseUser.get().then(function (user) {
     $rootScope.user = {
       isLoggedIn: true,
       name: user.thirdPartyUserData.given_name,
@@ -29,7 +29,7 @@ angular.module('names.authentication', ['ngRoute', 'hgFirebaseAuthentication'])
 
 .controller('LoginController', function ($scope, $location, FirebaseAuthentication, FirebaseUser) {
   var onLoginSucess = function (thirdPartyUser) {
-    FirebaseUser.resolve(thirdPartyUser)
+    FirebaseUser.set(thirdPartyUser)
     $location.path('/names')
   }
 
