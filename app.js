@@ -14,22 +14,27 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
       controller: 'MainController',
       controllerAs: 'main',
       resolve: {
-        submissions: function ($q, getSubmissions, rankingOf, user) {
-          if (!user.loggedIn) return null
-          var submissions = getSubmissions()
-          return $q.all([submissions.$loaded(), rankingOf(user.name).$loaded()]).then(function (s) {
-            var submissions = s[0]
-            var ranking = s[1]
-            _.each(submissions, function (submission, index) {
-              if (index >= ranking.length) ranking.$add(submission.$id)
+        submissions: function ($q, getSubmissions, rankingOf, User, Authentication) {
+          return User().then(function (user) {
+            var submissions = getSubmissions()
+            return $q.all([submissions.$loaded(), rankingOf(user.name).$loaded()]).then(function (s) {
+              var submissions = s[0]
+              var ranking = s[1]
+              _.each(submissions, function (submission, index) {
+                if (index >= ranking.length) ranking.$add(submission.$id)
+              })
+              _.each(ranking, function (rank, index) {
+                if (index >= submissions.length) ranking.$remove(index)
+              })
+              return submissions.$loaded()
             })
-            _.each(ranking, function (rank, index) {
-              if (index >= submissions.length) ranking.$remove(index)
-            })
-            return submissions.$loaded()
           })
         },
-        ranking: function (rankingOf, user) { return rankingOf(user.name).$loaded() },
+        ranking: function (rankingOf, User) {
+          return User().then(function (user) {
+            return rankingOf(user.name).$loaded()
+          })
+        },
         randomNames: function ($http) {
           var genders = ['male', 'female']
           var submitters = ['Hugo', 'Amandine']
@@ -52,27 +57,30 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
     })
 })
 
-.run(function ($rootScope, $location, amMoment, user) {
+.run(function ($rootScope, $location, amMoment, Authentication, User) {
   amMoment.changeLanguage('fr')
-  $rootScope.user = user
   $rootScope.$on('$routeChangeStart', function (event, next, current) {
-    if (!user.loggedIn && next.requireLogin) {
+    if (!Authentication.loggedIn() && next.requireLogin) {
       $location.path('/login')
-    } else if (user.loggedIn && next.isLoginPage) {
+    } else if (Authentication.loggedIn() && next.isLoginPage) {
       $location.path('/names')
     }
   });
+  User().then(function (user) {
+    $rootScope.loggedIn = true
+    $rootScope.user = user
+  })
 })
 
-.controller('loginController', function ($scope, $location, authentication, user) {
+.controller('loginController', function ($scope, $location, Authentication, User) {
   var onLoginSucess = function (thirdPartyUser) {
-    user.set(thirdPartyUser)
+    User.resolve(thirdPartyUser)
     $location.path('/names')
   }
 
   $scope.busy = true
   $scope.autoLoginInProgress = true
-  authentication.autoLogin().then(function (user) {
+  Authentication.autoLogin().then(function (user) {
     onLoginSucess(user)
   }).catch(function () {
     $scope.autoLoginFailed = true
@@ -81,7 +89,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
 
   $scope.login = function (provider) {
     $scope.busy = true
-    authentication.manualLogin(provider).then(function (user) {
+    Authentication.manualLogin(provider).then(function (user) {
       $scope.autoLoginInProgress = false
       $scope.autoLoginFailed = false
       $scope.manuallyLoggedIn = true
@@ -94,7 +102,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
   }
 })
 
-.factory('authentication', function ($firebaseSimpleLogin, submissionFirebaseReference, $rootScope, defer) {
+.factory('Authentication', function ($firebaseSimpleLogin, submissionFirebaseReference, $rootScope, defer) {
   var firebaseSimpleLogin = $firebaseSimpleLogin(submissionFirebaseReference)
   return {
     autoLogin: function () {
@@ -114,19 +122,23 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
     manualLogin: function (provider) {
       return firebaseSimpleLogin.$login(provider)
     },
+    loggedIn: function () {
+      return firebaseSimpleLogin.user !== null
+    }
   }
 })
 
-.factory('user', function () {
-  var user
-  return {
-    loggedIn: false,
-    set: function (thirdPartyUser) {
-      user = thirdPartyUser
-      this.name = user.thirdPartyUserData.given_name
-      this.loggedIn = true
-    },
+.factory('User', function ($q) {
+  var defer = $q.defer()
+  var getter = function () {
+    return defer.promise
   }
+  getter.resolve = function (thirdPartyUser) {
+    defer.resolve({
+      name: thirdPartyUser.thirdPartyUserData.given_name,
+    })
+  }
+  return getter
 })
 
 .factory('firebaseUrl', function ($location, $interpolate) {
@@ -171,48 +183,50 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
   }
 })
 
-.controller('MainController', function ($location, submissions, ranking, user, randomNames) {
+.controller('MainController', function ($location, submissions, ranking, User, randomNames) {
   var that = this
-  that.demo = $location.search().demo !== undefined
-  that.randomNames = randomNames
-  that.names = submissions
-  that.ranking = ranking
-  that.sortableOptions = (function () {
-    var ids
-    return {
-      handle: '.sortable-handle',
-      update: function () {
-        ids = _.map(ranking, '$id') // saving the order of ids before modification
-      },
-      stop: function () {
-        if (that.demo) return
-        _(ids).zip(ranking).zipObject().each(function (rank, newId) {
-          rank.$id = newId
-          ranking.$save(rank)
-        })
+  User().then(function (user) {
+    that.demo = $location.search().demo !== undefined
+    that.randomNames = randomNames
+    that.names = submissions
+    that.ranking = ranking
+    that.sortableOptions = (function () {
+      var ids
+      return {
+        handle: '.sortable-handle',
+        update: function () {
+          ids = _.map(ranking, '$id') // saving the order of ids before modification
+        },
+        stop: function () {
+          if (that.demo) return
+          _(ids).zip(ranking).zipObject().each(function (rank, newId) {
+            rank.$id = newId
+            ranking.$save(rank)
+          })
+        }
       }
+    }())
+
+    that.veto = function (submission) {
+      submission.vetoed = !submission.vetoed
+      submissions.$save(submission)
     }
-  }())
 
-  that.veto = function (submission) {
-    submission.vetoed = !submission.vetoed
-    submissions.$save(submission)
-  }
-
-  that.name = ''
-  that.female = false
-  that.submit = function (name) {
-    submissions.$add({
-      name: name,
-      submitter: user.name,
-      time: new Date().toISOString(),
-      gender: that.female ? 'female' : 'male',
-    }).then(function (ref) {
-      ranking.$add(ref.name())
-    })
     that.name = ''
-    that.form.$setPristine()
-  }
+    that.female = false
+    that.submit = function (name) {
+      submissions.$add({
+        name: name,
+        submitter: user.name,
+        time: new Date().toISOString(),
+        gender: that.female ? 'female' : 'male',
+      }).then(function (ref) {
+        ranking.$add(ref.name())
+      })
+      that.name = ''
+      that.form.$setPristine()
+    }
+  })
 })
 
 }())
