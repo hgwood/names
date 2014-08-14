@@ -1,8 +1,9 @@
 (function () { 'use strict';
 
-angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment', 'firebase', 'ng-polymer-elements', 'hgDefer', 'hgUnique'])
+angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment', 'firebase', 'ng-polymer-elements', 'hgFirebaseAuthentication', 'hgDefer', 'hgUnique'])
 
-.config(function ($routeProvider) {
+.config(function ($routeProvider, AuthenticationProvider) {
+  AuthenticationProvider.firebaseReference = new Firebase('boiling-fire-3739.firebaseIO.com')
   $routeProvider
     .when('/login', {
       templateUrl: 'login.html',
@@ -97,44 +98,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
   }
 })
 
-.factory('Authentication', function ($firebaseSimpleLogin, submissionFirebaseReference, $rootScope, defer) {
-  var firebaseSimpleLogin = $firebaseSimpleLogin(submissionFirebaseReference)
-  return {
-    autoLogin: function () {
-      return defer(function (promise) {
-        var unsubscribeFromLoginEvent = $rootScope.$on('$firebaseSimpleLogin:login', function(event, user) {
-          unsubscribeFromLoginEvent()
-          unsubscribeFromLogoutEvent()
-          promise.resolve(user)
-        })
-        var unsubscribeFromLogoutEvent = $rootScope.$on('$firebaseSimpleLogin:logout', function(event) {
-          unsubscribeFromLoginEvent()
-          unsubscribeFromLogoutEvent()
-          promise.reject()
-        })
-      })
-    },
-    manualLogin: function (provider) {
-      return firebaseSimpleLogin.$login(provider)
-    },
-    loggedIn: function () {
-      return firebaseSimpleLogin.user !== null
-    }
-  }
-})
 
-.factory('User', function ($q) {
-  var defer = $q.defer()
-  var getter = function () {
-    return defer.promise
-  }
-  getter.resolve = function (thirdPartyUser) {
-    defer.resolve({
-      name: thirdPartyUser.thirdPartyUserData.given_name,
-    })
-  }
-  return getter
-})
 
 .factory('firebaseUrl', function ($location, $interpolate) {
   var url = 'boiling-fire-3739.firebaseIO.com/apps/names/{{env}}/'
