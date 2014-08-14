@@ -2,7 +2,7 @@
 
 angular.module('hgFirebaseAuthentication', ['firebase'])
 
-.provider('Authentication', function () {
+.provider('FirebaseAuthentication', function () {
   var that = this
   that.firebaseReference = null
   that.$get = function ($rootScope, $firebaseSimpleLogin, defer) {
@@ -33,15 +33,13 @@ angular.module('hgFirebaseAuthentication', ['firebase'])
   }
 })
 
-.factory('User', function ($q) {
+.factory('FirebaseUser', function ($q) {
   var defer = $q.defer()
   var getter = function () {
     return defer.promise
   }
-  getter.resolve = function (thirdPartyUser) {
-    defer.resolve({
-      name: thirdPartyUser.thirdPartyUserData.given_name,
-    })
+  getter.resolve = function (user) {
+    defer.resolve(user)
   }
   return getter
 })

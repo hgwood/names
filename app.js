@@ -2,8 +2,8 @@
 
 angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment', 'firebase', 'ng-polymer-elements', 'hgFirebaseAuthentication', 'hgDefer', 'hgUnique'])
 
-.config(function ($routeProvider, AuthenticationProvider) {
-  AuthenticationProvider.firebaseReference = new Firebase('boiling-fire-3739.firebaseIO.com')
+.config(function ($routeProvider, FirebaseAuthenticationProvider) {
+  FirebaseAuthenticationProvider.firebaseReference = new Firebase('boiling-fire-3739.firebaseIO.com')
   $routeProvider
     .when('/login', {
       templateUrl: 'login.html',
@@ -15,8 +15,8 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
       controller: 'MainController',
       controllerAs: 'main',
       resolve: {
-        submissions: function ($q, getSubmissions, rankingOf, User, Authentication) {
-          return User().then(function (user) {
+        submissions: function ($q, getSubmissions, rankingOf, FirebaseUser, FirebaseAuthentication) {
+          return FirebaseUser().then(function (user) {
             var submissions = getSubmissions()
             return $q.all([submissions.$loaded(), rankingOf(user.name).$loaded()]).then(function (s) {
               var submissions = s[0]
@@ -31,8 +31,8 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
             })
           })
         },
-        ranking: function (rankingOf, User) {
-          return User().then(function (user) {
+        ranking: function (rankingOf, FirebaseUser) {
+          return FirebaseUser().then(function (user) {
             return rankingOf(user.name).$loaded()
           })
         },
@@ -58,29 +58,29 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
     })
 })
 
-.run(function ($rootScope, $location, amMoment, Authentication, User) {
+.run(function ($rootScope, $location, amMoment, FirebaseAuthentication, FirebaseUser) {
   amMoment.changeLanguage('fr')
   $rootScope.$on('$routeChangeStart', function (event, next, current) {
-    if (!Authentication.loggedIn() && next.requireLogin) {
+    if (!FirebaseAuthentication.loggedIn() && next.requireLogin) {
       $location.path('/login')
-    } else if (Authentication.loggedIn() && next.isLoginPage) {
+    } else if (FirebaseAuthentication.loggedIn() && next.isLoginPage) {
       $location.path('/names')
     }
   });
-  User().then(function (user) {
+  FirebaseUser().then(function (user) {
     $rootScope.loggedIn = true
-    $rootScope.user = user
+    $rootScope.username = user.thirdPartyUserData.given_name
   })
 })
 
-.controller('loginController', function ($scope, $location, Authentication, User) {
+.controller('loginController', function ($scope, $location, FirebaseAuthentication, FirebaseUser) {
   var onLoginSucess = function (thirdPartyUser) {
-    User.resolve(thirdPartyUser)
+    FirebaseUser.resolve(thirdPartyUser)
     $location.path('/names')
   }
 
   $scope.busy = true
-  Authentication.autoLogin().then(function (user) {
+  FirebaseAuthentication.autoLogin().then(function (user) {
     onLoginSucess(user)
   }).catch(function () {
     $scope.busy = false
@@ -88,7 +88,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
 
   $scope.login = function (provider) {
     $scope.busy = true
-    Authentication.manualLogin(provider).then(function (user) {
+    FirebaseAuthentication.manualLogin(provider).then(function (user) {
       onLoginSucess(user)
     }).catch(function (error) {
       $scope.busy = false
@@ -142,9 +142,9 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
   }
 })
 
-.controller('MainController', function ($location, submissions, ranking, User, randomNames) {
+.controller('MainController', function ($location, submissions, ranking, FirebaseUser, randomNames) {
   var that = this
-  User().then(function (user) {
+  FirebaseUser().then(function (user) {
     that.demo = $location.search().demo !== undefined
     that.randomNames = randomNames
     that.names = submissions
