@@ -79,20 +79,15 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
   }
 
   $scope.busy = true
-  $scope.autoLoginInProgress = true
   Authentication.autoLogin().then(function (user) {
     onLoginSucess(user)
   }).catch(function () {
-    $scope.autoLoginFailed = true
     $scope.busy = false
   })
 
   $scope.login = function (provider) {
     $scope.busy = true
     Authentication.manualLogin(provider).then(function (user) {
-      $scope.autoLoginInProgress = false
-      $scope.autoLoginFailed = false
-      $scope.manuallyLoggedIn = true
       onLoginSucess(user)
     }).catch(function (error) {
       $scope.busy = false
