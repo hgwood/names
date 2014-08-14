@@ -27,6 +27,16 @@ angular.module('names.authentication', ['ngRoute', 'hgFirebaseAuthentication'])
   })
 })
 
+.service('User', function (FirebaseUser) {
+  this.get = function () {
+    return FirebaseUser.get().then(function (firebaseUser) {
+      return {
+        name: firebaseUser.thirdPartyUserData.given_name,
+      }
+    })
+  }
+})
+
 .controller('LoginController', function ($scope, $location, FirebaseAuthentication, FirebaseUser) {
   var onLoginSucess = function (thirdPartyUser) {
     FirebaseUser.set(thirdPartyUser)

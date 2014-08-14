@@ -10,8 +10,8 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
       controller: 'MainController',
       controllerAs: 'main',
       resolve: {
-        submissions: function ($q, getSubmissions, rankingOf, FirebaseUser, FirebaseAuthentication) {
-          return FirebaseUser.get().then(function (user) {
+        submissions: function ($q, getSubmissions, rankingOf, User, FirebaseAuthentication) {
+          return User.get().then(function (user) {
             var submissions = getSubmissions()
             return $q.all([submissions.$loaded(), rankingOf(user.name).$loaded()]).then(function (s) {
               var submissions = s[0]
@@ -26,8 +26,8 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
             })
           })
         },
-        ranking: function (rankingOf, FirebaseUser) {
-          return FirebaseUser.get().then(function (user) {
+        ranking: function (rankingOf, User) {
+          return User.get().then(function (user) {
             return rankingOf(user.name).$loaded()
           })
         },
@@ -53,7 +53,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
     })
 })
 
-.run(function ($rootScope, $location, amMoment, FirebaseAuthentication, FirebaseUser) {
+.run(function ($rootScope, $location, amMoment, FirebaseAuthentication, User) {
   amMoment.changeLanguage('fr')
 
 })
@@ -103,9 +103,9 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
   }
 })
 
-.controller('MainController', function ($location, submissions, ranking, FirebaseUser, randomNames) {
+.controller('MainController', function ($location, submissions, ranking, User, randomNames) {
   var that = this
-  FirebaseUser.get().then(function (user) {
+  User.get().then(function (user) {
     that.demo = $location.search().demo !== undefined
     that.randomNames = randomNames
     that.names = submissions
