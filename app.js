@@ -1,15 +1,10 @@
 (function () { 'use strict';
 
-angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment', 'firebase', 'ng-polymer-elements', 'hgFirebaseAuthentication', 'hgDefer', 'hgUnique'])
+angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment', 'firebase', 'ng-polymer-elements', 'names.authentication', 'hgFirebaseAuthentication', 'hgDefer', 'hgUnique'])
 
 .config(function ($routeProvider, FirebaseAuthenticationProvider) {
   FirebaseAuthenticationProvider.firebaseReference = new Firebase('boiling-fire-3739.firebaseIO.com')
   $routeProvider
-    .when('/login', {
-      templateUrl: 'login.html',
-      controller: 'loginController',
-      isLoginPage: true,
-    })
     .when('/names', {
       templateUrl: 'names.html',
       controller: 'MainController',
@@ -60,43 +55,9 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
 
 .run(function ($rootScope, $location, amMoment, FirebaseAuthentication, FirebaseUser) {
   amMoment.changeLanguage('fr')
-  $rootScope.$on('$routeChangeStart', function (event, next, current) {
-    if (!FirebaseAuthentication.loggedIn() && next.requireLogin) {
-      $location.path('/login')
-    } else if (FirebaseAuthentication.loggedIn() && next.isLoginPage) {
-      $location.path('/names')
-    }
-  });
-  FirebaseUser().then(function (user) {
-    $rootScope.loggedIn = true
-    $rootScope.username = user.thirdPartyUserData.given_name
-  })
+
 })
 
-.controller('loginController', function ($scope, $location, FirebaseAuthentication, FirebaseUser) {
-  var onLoginSucess = function (thirdPartyUser) {
-    FirebaseUser.resolve(thirdPartyUser)
-    $location.path('/names')
-  }
-
-  $scope.busy = true
-  FirebaseAuthentication.autoLogin().then(function (user) {
-    onLoginSucess(user)
-  }).catch(function () {
-    $scope.busy = false
-  })
-
-  $scope.login = function (provider) {
-    $scope.busy = true
-    FirebaseAuthentication.manualLogin(provider).then(function (user) {
-      onLoginSucess(user)
-    }).catch(function (error) {
-      $scope.busy = false
-      $scope.error = error
-      $scope.errorDialogOpened = true
-    })
-  }
-})
 
 
 
