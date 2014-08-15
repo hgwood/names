@@ -39,7 +39,7 @@ angular.module('names.authentication', [
   this.$get = function ($location) {
     $routeProvider
       .when(AuthenticationRouterProvider.loginPageUrl, {
-        templateUrl: 'login.html',
+        templateUrl: 'authentication/login.html',
         controller: 'LoginController',
         isLoginPage: true,
       })
