@@ -5,11 +5,14 @@ angular.module('app', [
   'angularMoment', 'ng-polymer-elements', 'ui.bootstrap', 'ui.sortable',
   'firebase',
   'hgDefer', 'hgUnique',
-  'names.authentication'])
+  'names.authentication'
+])
 
-.config(function ($routeProvider, AuthenticationProvider) {
+.config(function ($routeProvider, AuthenticationRouterProvider) {
+  var submissionsRoute = '/submissions'
+  AuthenticationRouterProvider.redirectAfterLoginUrl = submissionsRoute
   $routeProvider
-    .when('/names', {
+    .when(submissionsRoute, {
       templateUrl: 'names.html',
       controller: 'MainController',
       controllerAs: 'main',
@@ -53,7 +56,7 @@ angular.module('app', [
       requireLogin: true,
     })
     .otherwise({
-      redirectTo: '/names',
+      redirectTo: submissionsRoute,
     })
 })
 

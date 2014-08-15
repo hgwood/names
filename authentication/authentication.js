@@ -1,22 +1,17 @@
 (function () { 'use strict';
 
-angular.module('names.authentication', ['ngRoute', 'hgFirebaseAuthentication', 'hgPaperDialog'])
+angular.module('names.authentication', [
+  'ngRoute',
+  'hgFirebaseAuthentication',
+  'hgPaperDialog',
+])
 
-.config(function ($routeProvider) {
-  $routeProvider
-    .when('/login', {
-      templateUrl: 'login.html',
-      controller: 'LoginController',
-      isLoginPage: true,
-    })
-})
-
-.run(function ($rootScope, $location, hgFirebaseAuthentication) {
+.run(function ($rootScope, Authentication, AuthenticationRouter) {
   $rootScope.$on('$routeChangeStart', function (event, next) {
-    if (!hgFirebaseAuthentication.loggedIn() && next.requireLogin) {
-      $location.path('/login')
-    } else if (hgFirebaseAuthentication.loggedIn() && next.isLoginPage) {
-      $location.path('/names')
+    if (!Authentication.loggedIn() && next.requireLogin) {
+      AuthenticationRouter.redirectToLogin()
+    } else if (Authentication.loggedIn() && next.isLoginPage) {
+      AuthenticationRouter.redirectAfterLogin()
     }
   })
 })
@@ -25,18 +20,37 @@ angular.module('names.authentication', ['ngRoute', 'hgFirebaseAuthentication', '
   hgFirebaseAuthenticationProvider.firebaseReference = new Firebase('boiling-fire-3739.firebaseIO.com')
   this.$get = function (hgFirebaseAuthentication) {
     return {
+      loggedIn: hgFirebaseAuthentication.loggedIn,
       getCurrentUser: function () {
         return hgFirebaseAuthentication.login().then(function (firebaseUser) {
           return {
             name: firebaseUser.thirdPartyUserData.given_name,
           }
         })
-      }
+      },
     }
   }
 })
 
-.controller('LoginController', function ($scope, $location, hgFirebaseAuthentication, hgPaperDialog) {
+.provider('AuthenticationRouter', function ($routeProvider) {
+  var AuthenticationRouterProvider = this
+  AuthenticationRouterProvider.loginPageUrl = '/login'
+  AuthenticationRouterProvider.redirectAfterLoginUrl = '/loggedIn'
+  this.$get = function ($location) {
+    $routeProvider
+      .when(AuthenticationRouterProvider.loginPageUrl, {
+        templateUrl: 'login.html',
+        controller: 'LoginController',
+        isLoginPage: true,
+      })
+    return {
+      redirectToLogin: function () { $location.path(AuthenticationRouterProvider.loginPageUrl) },
+      redirectAfterLogin: function () { $location.path(AuthenticationRouterProvider.redirectAfterLoginUrl) },
+    }
+  }
+})
+
+.controller('LoginController', function ($scope, hgFirebaseAuthentication, hgPaperDialog, Authentication, AuthenticationRouter) {
   $scope.busy = true
   hgFirebaseAuthentication.login()
     .newLoginRequired(function (login) {
@@ -52,12 +66,11 @@ angular.module('names.authentication', ['ngRoute', 'hgFirebaseAuthentication', '
       hgPaperDialog('#loginErrorDialog').toggle()
     })
     .success(function (user) {
-      $scope.user = {
-        isLoggedIn: true,
-        name: user.thirdPartyUserData.given_name,
-      }
-      $location.path('/names')
+      AuthenticationRouter.redirectAfterLogin()
     })
+  Authentication.getCurrentUser().then(function (user) {
+    $scope.user = user
+  })
 })
 
 }())
