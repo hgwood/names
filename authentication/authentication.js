@@ -21,13 +21,18 @@ angular.module('names.authentication', ['ngRoute', 'hgFirebaseAuthentication', '
   })
 })
 
-.service('User', function (hgFirebaseAuthentication) {
-  this.get = function () {
-    return hgFirebaseAuthentication.login().then(function (firebaseUser) {
-      return {
-        name: firebaseUser.thirdPartyUserData.given_name,
+.provider('Authentication', function (hgFirebaseAuthenticationProvider) {
+  hgFirebaseAuthenticationProvider.firebaseReference = new Firebase('boiling-fire-3739.firebaseIO.com')
+  this.$get = function (hgFirebaseAuthentication) {
+    return {
+      getCurrentUser: function () {
+        return hgFirebaseAuthentication.login().then(function (firebaseUser) {
+          return {
+            name: firebaseUser.thirdPartyUserData.given_name,
+          }
+        })
       }
-    })
+    }
   }
 })
 

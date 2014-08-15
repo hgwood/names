@@ -1,17 +1,21 @@
 (function () { 'use strict';
 
-angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment', 'firebase', 'ng-polymer-elements', 'names.authentication', 'hgFirebaseAuthentication', 'hgDefer', 'hgUnique'])
+angular.module('app', [
+  'ngRoute',
+  'angularMoment', 'ng-polymer-elements', 'ui.bootstrap', 'ui.sortable',
+  'firebase',
+  'hgDefer', 'hgUnique',
+  'names.authentication'])
 
-.config(function ($routeProvider, hgFirebaseAuthenticationProvider) {
-  hgFirebaseAuthenticationProvider.firebaseReference = new Firebase('boiling-fire-3739.firebaseIO.com')
+.config(function ($routeProvider, AuthenticationProvider) {
   $routeProvider
     .when('/names', {
       templateUrl: 'names.html',
       controller: 'MainController',
       controllerAs: 'main',
       resolve: {
-        submissions: function ($q, getSubmissions, rankingOf, User, hgFirebaseAuthentication) {
-          return User.get().then(function (user) {
+        submissions: function ($q, getSubmissions, rankingOf, Authentication) {
+          return Authentication.getCurrentUser().then(function (user) {
             var submissions = getSubmissions()
             return $q.all([submissions.$loaded(), rankingOf(user.name).$loaded()]).then(function (s) {
               var submissions = s[0]
@@ -26,8 +30,8 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
             })
           })
         },
-        ranking: function (rankingOf, User) {
-          return User.get().then(function (user) {
+        ranking: function (rankingOf, Authentication) {
+          return Authentication.getCurrentUser().then(function (user) {
             return rankingOf(user.name).$loaded()
           })
         },
@@ -53,13 +57,9 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
     })
 })
 
-.run(function ($rootScope, $location, amMoment, hgFirebaseAuthentication, User) {
+.run(function ($rootScope, amMoment) {
   amMoment.changeLanguage('fr')
-
 })
-
-
-
 
 .factory('firebaseUrl', function ($location, $interpolate) {
   var url = 'boiling-fire-3739.firebaseIO.com/apps/names/{{env}}/'
@@ -103,9 +103,9 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
   }
 })
 
-.controller('MainController', function ($location, submissions, ranking, User, randomNames) {
+.controller('MainController', function ($location, submissions, ranking, Authentication, randomNames) {
   var that = this
-  User.get().then(function (user) {
+  Authentication.getCurrentUser().then(function (user) {
     that.demo = $location.search().demo !== undefined
     that.randomNames = randomNames
     that.names = submissions
