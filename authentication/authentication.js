@@ -38,28 +38,23 @@ angular.module('names.authentication', ['ngRoute', 'hgFirebaseAuthentication'])
 })
 
 .controller('LoginController', function ($scope, $location, FirebaseAuthentication, FirebaseUser) {
-  var onLoginSucess = function (thirdPartyUser) {
-    FirebaseUser.set(thirdPartyUser)
-    $location.path('/names')
-  }
-
   $scope.busy = true
-  FirebaseAuthentication.autoLogin().then(function (user) {
-    onLoginSucess(user)
-  }).catch(function () {
-    $scope.busy = false
-  })
-
-  $scope.login = function (provider) {
-    $scope.busy = true
-    FirebaseAuthentication.manualLogin(provider).then(function (user) {
-      onLoginSucess(user)
-    }).catch(function (error) {
+  FirebaseAuthentication.login()
+    .newLoginRequired(function (login) {
+      $scope.busy = false
+      $scope.login = function(provider) {
+        $scope.busy = true
+        login(provider)
+      }
+    })
+    .success(function (user) {
+      $location.path('/names')
+    })
+    .error(function (error) {
       $scope.busy = false
       $scope.error = error
       $scope.errorDialogOpened = true
     })
-  }
 })
 
 }())

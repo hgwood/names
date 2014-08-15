@@ -3,31 +3,32 @@
 angular.module('hgFirebaseAuthentication', ['firebase', 'hgDefer'])
 
 .provider('FirebaseAuthentication', function () {
-  var that = this
-  that.firebaseReference = null
-  that.$get = function ($rootScope, $firebaseSimpleLogin, defer) {
-    if (!that.firebaseReference) throw new Error('firebaseReference was not set')
-    var firebaseSimpleLogin = $firebaseSimpleLogin(that.firebaseReference)
+  var FirebaseAuthenticationProvider = this
+  FirebaseAuthenticationProvider.firebaseReference = null
+  FirebaseAuthenticationProvider.$get = function ($q, $firebaseSimpleLogin, defer, FirebaseUser) {
+    if (!FirebaseAuthenticationProvider.firebaseReference) throw new Error('firebaseReference was not set')
+    var firebaseSimpleLogin = $firebaseSimpleLogin(FirebaseAuthenticationProvider.firebaseReference)
     return {
-      autoLogin: function () {
-        return defer(function (promise) {
-          var unsubscribeFromLoginEvent = $rootScope.$on('$firebaseSimpleLogin:login', function(event, user) {
-            unsubscribeFromLoginEvent()
-            unsubscribeFromLogoutEvent()
-            promise.resolve(user)
-          })
-          var unsubscribeFromLogoutEvent = $rootScope.$on('$firebaseSimpleLogin:logout', function(event) {
-            unsubscribeFromLoginEvent()
-            unsubscribeFromLogoutEvent()
-            promise.reject()
+      loggedIn: function () { return !!firebaseSimpleLogin.user },
+      login: function () {
+        var newLoginRequired = $q.defer()
+        var success = $q.defer()
+        success.promise.then(function (user) {
+          FirebaseUser.set(user)
+        })
+        firebaseSimpleLogin.$getCurrentUser().then(function (user) {
+          if (user) return success.resolve(user)
+          newLoginRequired.resolve(function (provider) {
+            firebaseSimpleLogin.$login(provider).then(
+              function (user) { success.resolve(user) },
+              function (error) { success.notify(error) })
           })
         })
-      },
-      manualLogin: function (provider) {
-        return firebaseSimpleLogin.$login(provider)
-      },
-      loggedIn: function () {
-        return firebaseSimpleLogin.user !== null
+        return {
+          success: function (callback) { success.promise.then(callback); return this },
+          error: function (callback) { success.promise.then(null, null, callback); return this },
+          newLoginRequired: function (callback) { newLoginRequired.promise.then(callback); return this },
+        }
       }
     }
   }
