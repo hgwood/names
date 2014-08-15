@@ -24,11 +24,11 @@ angular.module('hgFirebaseAuthentication', ['firebase', 'hgDefer'])
               function (error) { success.notify(error) })
           })
         })
-        return {
-          success: function (callback) { success.promise.then(callback); return this },
-          error: function (callback) { success.promise.then(null, null, callback); return this },
-          newLoginRequired: function (callback) { newLoginRequired.promise.then(callback); return this },
-        }
+        return Mutator({
+          success: function (callback) { success.promise.then(callback) },
+          error: function (callback) { success.promise.then(null, null, callback) },
+          newLoginRequired: function (callback) { newLoginRequired.promise.then(callback) },
+        })
       }
     }
   }

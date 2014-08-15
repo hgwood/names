@@ -5,7 +5,8 @@
   "globals": {
     "angular": false,
     "_": false,
-    "Firebase": false
+    "Firebase": false,
+    "Mutator": false
   },
 
   "bitwise": true,
