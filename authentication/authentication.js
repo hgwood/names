@@ -1,6 +1,6 @@
 (function () { 'use strict';
 
-angular.module('names.authentication', ['ngRoute', 'hgFirebaseAuthentication'])
+angular.module('names.authentication', ['ngRoute', 'hgFirebaseAuthentication', 'hgPaperDialog'])
 
 .config(function ($routeProvider) {
   $routeProvider
@@ -37,7 +37,7 @@ angular.module('names.authentication', ['ngRoute', 'hgFirebaseAuthentication'])
   }
 })
 
-.controller('LoginController', function ($scope, $location, FirebaseAuthentication, FirebaseUser) {
+.controller('LoginController', function ($scope, $location, FirebaseAuthentication, FirebaseUser, hgPaperDialog) {
   $scope.busy = true
   FirebaseAuthentication.login()
     .newLoginRequired(function (login) {
@@ -53,7 +53,7 @@ angular.module('names.authentication', ['ngRoute', 'hgFirebaseAuthentication'])
     .error(function (error) {
       $scope.busy = false
       $scope.error = error
-      $scope.errorDialogOpened = true
+      hgPaperDialog('#loginErrorDialog').toggle()
     })
 })
 
