@@ -18,20 +18,7 @@ angular.module('app', [
       controllerAs: 'main',
       resolve: {
         rankedSubmissions: 'rankedSubmissionsPromise',
-        randomNames: function ($http) {
-          var genders = ['male', 'female']
-          var submitters = ['Hugo', 'Amandine']
-          return $http.get('random.json').then(function (response) {
-            return _.map(response.data, function (name) {
-              return {
-                name: name,
-                gender: _.sample(genders),
-                submitter: _.sample(submitters),
-                time: new Date(),
-              }
-            })
-          })
-        }
+        randomNames: 'randomNamesPromise',
       },
       requireLogin: true,
     })
@@ -99,6 +86,21 @@ angular.module('app', [
           })
           idOrdering = _.map(ranking, '$id')
         }
+      }
+    })
+  })
+})
+
+.factory('randomNamesPromise', function ($http) {
+  var genders = ['male', 'female']
+  var submitters = ['Hugo', 'Amandine']
+  return $http.get('random.json').then(function (response) {
+    return _.map(response.data, function (name) {
+      return {
+        name: name,
+        gender: _.sample(genders),
+        submitter: _.sample(submitters),
+        time: new Date(),
       }
     })
   })
