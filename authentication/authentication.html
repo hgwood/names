@@ -1,0 +1,28 @@
+<div class="container">
+
+<div id="loginForm" class="row" ng-hide="authentication.busy">
+  <div class="col-xs-12 text-center">
+    <h1>Qui c'est ?</h1>
+    <paper-button id="loginButton" raisedButton label="Connexion" ng-click="authentication.login('google')"></paper-button>
+  </div>
+</div>
+
+<div class="row" ng-show="authentication.busy">
+  <div class="col-xs-12 text-center">
+    <i class="fa fa-refresh fa-spin fa-4x"></i>
+  </div>
+</div>
+
+<div class="row" ng-show="!!authentication.user">
+  <div class="col-xs-12 text-center">
+    <p>Hello, {{authentication.user.name}} :)</p>
+  </div>
+</div>
+
+<paper-dialog id="loginErrorDialog" heading="Erreur" transition="paper-dialog-transition-center">
+  <p ng-show="!!authentication.error.message">{{authentication.error.message}}</p>
+  <p>Code : {{authentication.error.code}}</p>
+  <paper-button label="OK" affirmative autofocus></paper-button>
+</paper-dialog>
+
+</div>

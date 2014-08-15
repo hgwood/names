@@ -39,8 +39,9 @@ angular.module('names.authentication', [
   this.$get = function ($location) {
     $routeProvider
       .when(AuthenticationRouterProvider.loginPageUrl, {
-        templateUrl: 'authentication/login.html',
-        controller: 'LoginController',
+        templateUrl: 'authentication/authentication.html',
+        controller: 'AuthenticationController',
+        controllerAs: 'authentication',
         isLoginPage: true,
       })
     return {
@@ -50,26 +51,27 @@ angular.module('names.authentication', [
   }
 })
 
-.controller('LoginController', function ($scope, hgFirebaseAuthentication, hgPaperDialog, Authentication, AuthenticationRouter) {
-  $scope.busy = true
+.controller('AuthenticationController', function (hgFirebaseAuthentication, hgPaperDialog, Authentication, AuthenticationRouter) {
+  var authentication = this
+  authentication.busy = true
   hgFirebaseAuthentication.login()
     .newLoginRequired(function (login) {
-      $scope.busy = false
-      $scope.login = function(provider) {
-        $scope.busy = true
+      authentication.busy = false
+      authentication.login = function(provider) {
+        authentication.busy = true
         login(provider)
       }
     })
     .error(function (error) {
-      $scope.busy = false
-      $scope.error = error
+      authentication.busy = false
+      authentication.error = error
       hgPaperDialog('#loginErrorDialog').toggle()
     })
     .success(function (user) {
       AuthenticationRouter.redirectAfterLogin()
     })
   Authentication.getCurrentUser().then(function (user) {
-    $scope.user = user
+    authentication.user = user
   })
 })
 
