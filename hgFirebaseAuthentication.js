@@ -8,29 +8,35 @@ angular.module('hgFirebaseAuthentication', ['firebase'])
   FirebaseAuthenticationProvider.$get = function ($q, $firebaseSimpleLogin) {
     if (!FirebaseAuthenticationProvider.firebaseReference) throw new Error('firebaseReference was not set')
     var firebaseSimpleLogin = $firebaseSimpleLogin(FirebaseAuthenticationProvider.firebaseReference)
-    var loginSuccess = $q.defer()
     return {
       loggedIn: function () { return !!firebaseSimpleLogin.user },
       login: function () {
-        loginSuccess = $q.defer()
-        var newLoginRequired = $q.defer()
+        var success = $q.defer()
         firebaseSimpleLogin.$getCurrentUser().then(function (user) {
-          if (user) return loginSuccess.resolve(user)
-          newLoginRequired.resolve(function (provider) {
-            firebaseSimpleLogin.$login(provider).then(
-              function (user) { loginSuccess.resolve(user) },
-              function (error) { loginSuccess.notify(error) })
+          if (user) return success.resolve(user)
+          success.notify(function (provider) {
+            firebaseSimpleLogin.$login(provider).then(success.resolve, success.notify)
           })
         })
-        return Mutator({
-          success: function (callback) { loginSuccess.promise.then(callback) },
-          error: function (callback) { loginSuccess.promise.then(null, null, callback) },
-          newLoginRequired: function (callback) { newLoginRequired.promise.then(callback) },
+        return _.extend(success.promise, {
+          success: function (callback) {
+            success.promise.then(callback)
+            return success.promise
+          },
+          error: function (callback) {
+            success.promise.then(null, null, function (notification) {
+              if (!_.isFunction(notification)) callback(notification)
+            })
+            return success.promise
+          },
+          newLoginRequired: function (callback) {
+            success.promise.then(null, null, function (notification) {
+              if (_.isFunction(notification)) callback(notification)
+            })
+            return success.promise
+          },
         })
       },
-      getUser: function () {
-        return loginSuccess.promise
-      }
     }
   }
 })

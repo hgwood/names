@@ -23,7 +23,7 @@ angular.module('names.authentication', ['ngRoute', 'hgFirebaseAuthentication', '
 
 .service('User', function (FirebaseAuthentication) {
   this.get = function () {
-    return FirebaseAuthentication.getUser().then(function (firebaseUser) {
+    return FirebaseAuthentication.login().then(function (firebaseUser) {
       return {
         name: firebaseUser.thirdPartyUserData.given_name,
       }
