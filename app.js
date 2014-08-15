@@ -122,30 +122,30 @@ angular.module('app', [
 })
 
 .controller('MainController', function ($location, rankedSubmissions, randomNames) {
-  var that = this
-  that.demo = $location.search().demo !== undefined
-  that.randomNames = randomNames
-  that.names = rankedSubmissions.submissions
-  that.ranking = rankedSubmissions.ranking
-  that.sortableOptions = {
+  var main = this
+  main.demo = $location.search().demo !== undefined
+  main.randomNames = randomNames
+  main.names = rankedSubmissions.submissions
+  main.ranking = rankedSubmissions.ranking
+  main.sortableOptions = {
     handle: '.sortable-handle',
     stop: function () {
-      if (that.demo) return
+      if (main.demo) return
       rankedSubmissions.saveOrdering()
     }
   }
 
-  that.name = ''
-  that.female = false
-  that.submit = function (name) {
+  main.name = ''
+  main.female = false
+  main.submit = function (name) {
     rankedSubmissions.add({
       name: name,
       submitter: rankedSubmissions.user.name,
       time: new Date().toISOString(),
-      gender: that.female ? 'female' : 'male',
+      gender: main.female ? 'female' : 'male',
     })
-    that.name = ''
-    that.form.$setPristine()
+    main.name = ''
+    main.form.$setPristine()
   }
 })
 
