@@ -17,27 +17,7 @@ angular.module('app', [
       controller: 'MainController',
       controllerAs: 'main',
       resolve: {
-        submissions: function ($q, getSubmissions, rankingOf, Authentication) {
-          return Authentication.getCurrentUser().then(function (user) {
-            var submissions = getSubmissions()
-            return $q.all([submissions.$loaded(), rankingOf(user.name).$loaded()]).then(function (s) {
-              var submissions = s[0]
-              var ranking = s[1]
-              _.each(submissions, function (submission, index) {
-                if (index >= ranking.length) ranking.$add(submission.$id)
-              })
-              _.each(ranking, function (rank, index) {
-                if (index >= submissions.length) ranking.$remove(index)
-              })
-              return submissions.$loaded()
-            })
-          })
-        },
-        ranking: function (rankingOf, Authentication) {
-          return Authentication.getCurrentUser().then(function (user) {
-            return rankingOf(user.name).$loaded()
-          })
-        },
+        rankedSubmissions: 'rankedSubmissionsPromise',
         randomNames: function ($http) {
           var genders = ['male', 'female']
           var submitters = ['Hugo', 'Amandine']
@@ -91,6 +71,39 @@ angular.module('app', [
   }
 })
 
+.factory('rankedSubmissionsPromise', function ($q, Authentication, getSubmissions, rankingOf) {
+  return Authentication.getCurrentUser().then(function (user) {
+    return $q.all([getSubmissions().$loaded(), rankingOf(user.name).$loaded()]).then(function (submissionsAndRanking) {
+      var submissions = submissionsAndRanking[0]
+      var ranking = submissionsAndRanking[1]
+      _.each(submissions, function (submission, index) {
+        if (index >= ranking.length) ranking.$add(submission.$id)
+      })
+      _.each(ranking, function (rank, index) {
+        if (index >= submissions.length) ranking.$remove(index)
+      })
+      var idOrdering = _.map(ranking, '$id')
+      return {
+        user: user,
+        submissions: submissions,
+        ranking: ranking,
+        add: function (submission) {
+          submissions.$add(submission).then(function (ref) {
+            ranking.$add(ref.name())
+          })
+        },
+        saveOrdering: function () {
+          _(idOrdering).zip(ranking).object().each(function (rank, newId) {
+            rank.$id = newId
+            ranking.$save(rank)
+          })
+          idOrdering = _.map(ranking, '$id')
+        }
+      }
+    })
+  })
+})
+
 .filter('mapTo', function () {
   return function (ranking, items) {
     if (!ranking || !items) return
@@ -102,54 +115,36 @@ angular.module('app', [
 
 .filter('anonymizeUsing', function ($http) {
   return function (names, randomNames, active) {
-    return active ? randomNames : names
+    return active ? _.take(randomNames, names.length) : names
   }
 })
 
-.controller('MainController', function ($location, submissions, ranking, Authentication, randomNames) {
+.controller('MainController', function ($location, rankedSubmissions, randomNames) {
   var that = this
-  Authentication.getCurrentUser().then(function (user) {
-    that.demo = $location.search().demo !== undefined
-    that.randomNames = randomNames
-    that.names = submissions
-    that.ranking = ranking
-    that.sortableOptions = (function () {
-      var ids
-      return {
-        handle: '.sortable-handle',
-        update: function () {
-          ids = _.map(ranking, '$id') // saving the order of ids before modification
-        },
-        stop: function () {
-          if (that.demo) return
-          _(ids).zip(ranking).zipObject().each(function (rank, newId) {
-            rank.$id = newId
-            ranking.$save(rank)
-          })
-        }
-      }
-    }())
-
-    that.veto = function (submission) {
-      submission.vetoed = !submission.vetoed
-      submissions.$save(submission)
+  that.demo = $location.search().demo !== undefined
+  that.randomNames = randomNames
+  that.names = rankedSubmissions.submissions
+  that.ranking = rankedSubmissions.ranking
+  that.sortableOptions = {
+    handle: '.sortable-handle',
+    stop: function () {
+      if (that.demo) return
+      rankedSubmissions.saveOrdering()
     }
+  }
 
+  that.name = ''
+  that.female = false
+  that.submit = function (name) {
+    rankedSubmissions.add({
+      name: name,
+      submitter: rankedSubmissions.user.name,
+      time: new Date().toISOString(),
+      gender: that.female ? 'female' : 'male',
+    })
     that.name = ''
-    that.female = false
-    that.submit = function (name) {
-      submissions.$add({
-        name: name,
-        submitter: user.name,
-        time: new Date().toISOString(),
-        gender: that.female ? 'female' : 'male',
-      }).then(function (ref) {
-        ranking.$add(ref.name())
-      })
-      that.name = ''
-      that.form.$setPristine()
-    }
-  })
+    that.form.$setPristine()
+  }
 })
 
 }())
