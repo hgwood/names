@@ -2,12 +2,12 @@
 
 angular.module('hgFirebaseAuthentication', ['firebase'])
 
-.provider('FirebaseAuthentication', function () {
-  var FirebaseAuthenticationProvider = this
-  FirebaseAuthenticationProvider.firebaseReference = null
-  FirebaseAuthenticationProvider.$get = function ($q, $firebaseSimpleLogin) {
-    if (!FirebaseAuthenticationProvider.firebaseReference) throw new Error('firebaseReference was not set')
-    var firebaseSimpleLogin = $firebaseSimpleLogin(FirebaseAuthenticationProvider.firebaseReference)
+.provider('hgFirebaseAuthentication', function () {
+  var hgFirebaseAuthenticationProvider = this
+  hgFirebaseAuthenticationProvider.firebaseReference = null
+  hgFirebaseAuthenticationProvider.$get = function ($q, $firebaseSimpleLogin) {
+    if (!hgFirebaseAuthenticationProvider.firebaseReference) throw new Error('firebaseReference was not set')
+    var firebaseSimpleLogin = $firebaseSimpleLogin(hgFirebaseAuthenticationProvider.firebaseReference)
     return {
       loggedIn: function () { return !!firebaseSimpleLogin.user },
       login: function () {

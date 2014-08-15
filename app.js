@@ -2,15 +2,15 @@
 
 angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment', 'firebase', 'ng-polymer-elements', 'names.authentication', 'hgFirebaseAuthentication', 'hgDefer', 'hgUnique'])
 
-.config(function ($routeProvider, FirebaseAuthenticationProvider) {
-  FirebaseAuthenticationProvider.firebaseReference = new Firebase('boiling-fire-3739.firebaseIO.com')
+.config(function ($routeProvider, hgFirebaseAuthenticationProvider) {
+  hgFirebaseAuthenticationProvider.firebaseReference = new Firebase('boiling-fire-3739.firebaseIO.com')
   $routeProvider
     .when('/names', {
       templateUrl: 'names.html',
       controller: 'MainController',
       controllerAs: 'main',
       resolve: {
-        submissions: function ($q, getSubmissions, rankingOf, User, FirebaseAuthentication) {
+        submissions: function ($q, getSubmissions, rankingOf, User, hgFirebaseAuthentication) {
           return User.get().then(function (user) {
             var submissions = getSubmissions()
             return $q.all([submissions.$loaded(), rankingOf(user.name).$loaded()]).then(function (s) {
@@ -53,7 +53,7 @@ angular.module('app', ['ngRoute', 'ui.bootstrap', 'ui.sortable', 'angularMoment'
     })
 })
 
-.run(function ($rootScope, $location, amMoment, FirebaseAuthentication, User) {
+.run(function ($rootScope, $location, amMoment, hgFirebaseAuthentication, User) {
   amMoment.changeLanguage('fr')
 
 })

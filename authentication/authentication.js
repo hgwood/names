@@ -11,19 +11,19 @@ angular.module('names.authentication', ['ngRoute', 'hgFirebaseAuthentication', '
     })
 })
 
-.run(function ($rootScope, $location, FirebaseAuthentication) {
+.run(function ($rootScope, $location, hgFirebaseAuthentication) {
   $rootScope.$on('$routeChangeStart', function (event, next) {
-    if (!FirebaseAuthentication.loggedIn() && next.requireLogin) {
+    if (!hgFirebaseAuthentication.loggedIn() && next.requireLogin) {
       $location.path('/login')
-    } else if (FirebaseAuthentication.loggedIn() && next.isLoginPage) {
+    } else if (hgFirebaseAuthentication.loggedIn() && next.isLoginPage) {
       $location.path('/names')
     }
   })
 })
 
-.service('User', function (FirebaseAuthentication) {
+.service('User', function (hgFirebaseAuthentication) {
   this.get = function () {
-    return FirebaseAuthentication.login().then(function (firebaseUser) {
+    return hgFirebaseAuthentication.login().then(function (firebaseUser) {
       return {
         name: firebaseUser.thirdPartyUserData.given_name,
       }
@@ -31,9 +31,9 @@ angular.module('names.authentication', ['ngRoute', 'hgFirebaseAuthentication', '
   }
 })
 
-.controller('LoginController', function ($scope, $location, FirebaseAuthentication, hgPaperDialog) {
+.controller('LoginController', function ($scope, $location, hgFirebaseAuthentication, hgPaperDialog) {
   $scope.busy = true
-  FirebaseAuthentication.login()
+  hgFirebaseAuthentication.login()
     .newLoginRequired(function (login) {
       $scope.busy = false
       $scope.login = function(provider) {
