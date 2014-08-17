@@ -1,6 +1,6 @@
 (function () { 'use strict';
 
-angular.module('names.authentication', [
+angular.module('hgwood.names.authentication', [
   'ngRoute',
   'hgFirebaseAuthentication',
   'hgPaperDialog',

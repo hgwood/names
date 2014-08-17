@@ -5,7 +5,7 @@ angular.module('app', [
   'angularMoment', 'ng-polymer-elements', 'ui.bootstrap', 'ui.sortable',
   'firebase',
   'hgDefer', 'hgUnique',
-  'hgwood.names.anonymize', 'names.authentication',
+  'hgwood.names.anonymize', 'hgwood.names.authentication',
 ])
 
 .config(function ($routeProvider, AuthenticationRouterProvider) {
