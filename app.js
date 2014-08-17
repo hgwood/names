@@ -5,7 +5,7 @@ angular.module('app', [
   'angularMoment', 'ng-polymer-elements', 'ui.bootstrap', 'ui.sortable',
   'firebase',
   'hgDefer', 'hgUnique',
-  'names.authentication'
+  'hgwood.names.anonymize', 'names.authentication',
 ])
 
 .config(function ($routeProvider, AuthenticationRouterProvider) {
@@ -19,7 +19,7 @@ angular.module('app', [
       requireLogin: true,
       resolve: {
         rankedSubmissions: 'rankedSubmissionsPromise',
-        randomNames: 'randomNamesPromise',
+        anonymizedSubmissions: 'anonymizedSubmissionsPromise',
       },
     })
     .otherwise({
@@ -80,21 +80,6 @@ angular.module('app', [
   })
 })
 
-.factory('randomNamesPromise', function ($http) {
-  var genders = ['male', 'female']
-  var submitters = ['Hugo', 'Amandine']
-  return $http.get('random.json').then(function (response) {
-    return _.map(response.data, function (name) {
-      return {
-        name: name,
-        gender: _.sample(genders),
-        submitter: _.sample(submitters),
-        time: new Date(),
-      }
-    })
-  })
-})
-
 .filter('mapTo', function () {
   return function (ranking, items) {
     if (!ranking || !items) return
@@ -104,16 +89,10 @@ angular.module('app', [
   }
 })
 
-.filter('anonymizeUsing', function ($http) {
-  return function (names, randomNames, active) {
-    return active ? _.take(randomNames, names.length) : names
-  }
-})
-
-.controller('MainController', function ($location, rankedSubmissions, randomNames) {
+.controller('MainController', function ($location, rankedSubmissions, anonymizedSubmissions) {
   var main = this
   main.demo = $location.search().demo !== undefined
-  main.randomNames = randomNames
+  main.anonymizedSubmissions = anonymizedSubmissions
   main.names = rankedSubmissions.submissions
   main.ranking = rankedSubmissions.ranking
   main.sortableOptions = {
