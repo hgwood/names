@@ -16,51 +16,40 @@ angular.module('app', [
       templateUrl: 'names.html',
       controller: 'MainController',
       controllerAs: 'main',
+      requireLogin: true,
       resolve: {
         rankedSubmissions: 'rankedSubmissionsPromise',
         randomNames: 'randomNamesPromise',
       },
-      requireLogin: true,
     })
     .otherwise({
       redirectTo: submissionsRoute,
     })
 })
 
-.run(function ($rootScope, amMoment) {
+.run(function (amMoment) {
   amMoment.changeLanguage('fr')
 })
 
-.factory('firebaseUrl', function ($location, $interpolate) {
-  var url = 'boiling-fire-3739.firebaseIO.com/apps/names/{{env}}/'
-  return function (path) {
-    if ($location.host().match(/localhost|127\.0\.0\.1|192\.168\./)) {
-      return new Firebase($interpolate(url + path)({env: 'dev'}))
-    } else {
-      return new Firebase($interpolate(url + path)({env: 'prod'}))
-    }
+.factory('FirebaseReferences', function ($location, $firebase) {
+  var environment = $location.host().match(/localhost|127\.0\.0\.1|192\.168\./) ? 'dev' : 'prod'
+  var rootReference = 'boiling-fire-3739.firebaseIO.com/apps/names/' + environment + '/'
+  return {
+    submissions: function () {
+      return $firebase(new Firebase(rootReference + 'submissions')).$asArray()
+    },
+    ranking: function (username) {
+      return $firebase(new Firebase(rootReference + 'rankings/' + username)).$asArray()
+    },
   }
 })
 
-.factory('submissionFirebaseReference', function ($firebase, firebaseUrl) {
-  return firebaseUrl('submissions')
-})
-
-.factory('getSubmissions', function ($firebase, submissionFirebaseReference) {
-  return function () {
-    return $firebase(submissionFirebaseReference).$asArray()
-  }
-})
-
-.factory('rankingOf', function ($firebase, firebaseUrl) {
-  return function (username) {
-    return $firebase(firebaseUrl('rankings/' + username)).$asArray()
-  }
-})
-
-.factory('rankedSubmissionsPromise', function ($q, Authentication, getSubmissions, rankingOf) {
+.factory('rankedSubmissionsPromise', function ($q, Authentication, FirebaseReferences) {
   return Authentication.getCurrentUser().then(function (user) {
-    return $q.all([getSubmissions().$loaded(), rankingOf(user.name).$loaded()]).then(function (submissionsAndRanking) {
+    return $q.all([
+      FirebaseReferences.submissions().$loaded(),
+      FirebaseReferences.ranking(user.name).$loaded()
+    ]).then(function (submissionsAndRanking) {
       var submissions = submissionsAndRanking[0]
       var ranking = submissionsAndRanking[1]
       _.each(submissions, function (submission, index) {
