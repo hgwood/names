@@ -58,7 +58,6 @@ angular.module('app', [
       _.each(ranking, function (rank, index) {
         if (index >= submissions.length) ranking.$remove(index)
       })
-      var idOrdering = _.map(ranking, '$id')
       return {
         user: user,
         submissions: submissions,
@@ -69,11 +68,15 @@ angular.module('app', [
           })
         },
         saveOrdering: function () {
-          _(idOrdering).zip(ranking).object().each(function (rank, newId) {
-            rank.$id = newId
-            ranking.$save(rank)
-          })
-          idOrdering = _.map(ranking, '$id')
+          _(ranking)
+            .map('$id')
+            .sortBy()
+            .zip(ranking)
+            .object()
+            .each(function (rank, newId) {
+              rank.$id = newId
+              ranking.$save(rank)
+            })
         }
       }
     })
